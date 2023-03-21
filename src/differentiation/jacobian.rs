@@ -11,7 +11,7 @@ pub fn jacobian<T: traits::Scalar>(f: fn(Array1<T>) -> Array1<T>, x:Array1<T>) -
 
     let lifted_x = <Array1<T> as LiftArray<T, DualNumber<T>>>::lift_for_differentiation(x, derivative_id);
 
-    let result = 
+    // let result =  TODO: Continue here
     println!("{:?}", lifted_x);
 }
 
