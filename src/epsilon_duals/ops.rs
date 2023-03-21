@@ -58,6 +58,14 @@ impl <T: traits::Scalar> Add for Perturbation<T>{
     }
 }
 
+impl<T: traits::Scalar> Add<T> for Perturbation<T>{
+    type Output = DualNumber<T>;
+
+    fn add(self, rhs: T) -> Self::Output {
+        DualNumber::<T>::Perturbed(rhs, self)
+    }
+}
+
 impl<T: traits::Scalar> MulAssign<T> for Perturbation<T>{
     fn mul_assign(&mut self, rhs:T) -> (){
         for x in self.coefficients.iter_mut(){
@@ -110,13 +118,6 @@ impl <T: traits::Scalar> Mul for Perturbation<T>{
 }
 
 
-impl<T: traits::Scalar> Add<T> for Perturbation<T>{
-    type Output = DualNumber<T>;
-
-    fn add(self, rhs: T) -> Self::Output {
-        DualNumber::<T>::Simple(rhs, self)
-    }
-}
 
 /*
     Operations related to Dual Numbers
@@ -127,35 +128,11 @@ impl<T: traits::Scalar> Add<Perturbation<T>> for DualNumber<T>{
 
     fn add(self, rhs: Perturbation<T>) -> Self::Output{
         match self{
-            Self::Simple(val, per) => {
-                DualNumber::<T>::Simple(val, per + rhs)
-            },
-
-            Self::Complex(dual,per) => {
-                *dual + per + rhs
-            }
+            Self::Unperturbed(value) => DualNumber::Perturbed(value, rhs),
+            Self::Perturbed(value, perturb) => DualNumber::Perturbed(value, perturb + rhs)
         }
     }
 
-}
-
-impl<T: traits::Scalar> Mul<Perturbation<T>> for DualNumber<T>{
-    type Output = DualNumber<T>;
-
-    fn mul(self, rhs: Perturbation<T>) -> Self::Output {
-        match self{
-            Self::Simple(val, per) => {
-                let scaled_perturbation  : Perturbation<T> = rhs.clone() * val;
-                let cross_multiplication : Perturbation<T> = rhs * per;
-
-                DualNumber::<T>::from_perturbation(scaled_perturbation + cross_multiplication)
-            }
-
-           Self::Complex(dual, per) =>{
-               *dual * rhs.clone() + rhs * per
-           }
-        }
-    }
 }
 
 impl<T: traits::Scalar> Add for DualNumber<T>{
@@ -163,14 +140,21 @@ impl<T: traits::Scalar> Add for DualNumber<T>{
 
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs){
-            (Self::Simple(va,pa), Self::Simple(vb, pb)) => Self::Simple(va+vb, pa+pb),
-            
-            (Self::Simple(va,pa), Self::Complex(dual, pb)) => Self::Simple(va,pa+pb) + *dual,
+            (Self::Unperturbed(value_a), Self::Unperturbed(value_b)) => {
+                Self::Unperturbed(value_a+value_b)
+            },
 
-            (Self::Complex(dual,pa), Self::Simple(vb,pb)) => Self::Simple(vb,pa+pb) + *dual,
+            (Self::Unperturbed(value_a), Self::Perturbed(value_b, perturb_b)) =>{
+                Self::Perturbed(value_a+value_b, perturb_b)
+            },
 
-            (Self::Complex(dual_a, pa), Self::Complex(dual_b,pb )) => *dual_a + pa + *dual_b + pb,
+            (Self::Perturbed(value_a, perturb_a), Self::Unperturbed(value_b)) =>{
+                Self::Perturbed(value_a+value_b, perturb_a)
+            },
 
+            (Self::Perturbed(value_a, perturb_a), Self::Perturbed(value_b, perturb_b)) =>{
+                Self::Perturbed(value_a+value_b, perturb_a+perturb_b)
+            }
         }
     }
 }
@@ -181,13 +165,21 @@ impl<T: traits::Scalar> Mul for DualNumber<T>{
 
     fn mul(self, rhs: Self) -> Self::Output {
         match(self, rhs){
-            (Self::Simple(va, pa), Self::Simple(vb, pb)) => Self::Simple(va.clone()*vb.clone(), pb.clone()*va + pa.clone()*vb + pa*pb),
-            
-            (Self::Simple(va, pa), Self::Complex(dual_b, pb)) => (pa + va) * (*dual_b + pb),
-              
-            (Self::Complex(dual_a, pa), Self::Simple(vb,pb)) => (pb + vb) * (*dual_a + pa),
+            (Self::Unperturbed(value_a), Self::Unperturbed(value_b)) =>{
+                Self::Unperturbed(value_a*value_b)
+            },
 
-            (Self::Complex(dual_a, pa), Self::Complex(dual_b, pb)) => (*dual_a + pa) * (*dual_b + pb)
+            (Self::Unperturbed(value_a), Self::Perturbed(value_b, perturb_b)) => {
+                Self::Perturbed(value_a, perturb_b*value_b)
+            },
+
+            (Self::Perturbed(value_a, perturb_a), Self::Unperturbed(value_b)) => {
+                Self::Perturbed(value_a*value_b, perturb_a*value_b)
+            },
+
+            (Self::Perturbed(value_a, perturb_a), Self::Perturbed(value_b, perturb_b)) => {
+                Self::Perturbed(value_a*value_b, perturb_a.clone()*value_b + perturb_b.clone()*value_a + perturb_a*perturb_b) 
+            }
         }
     }
 }

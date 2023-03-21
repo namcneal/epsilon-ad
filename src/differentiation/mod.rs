@@ -1,1 +1,2 @@
-pub mod directional_derivative;
+mod lift_for_differentiation;
+pub mod jacobian;
