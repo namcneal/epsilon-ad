@@ -1,2 +1,4 @@
-pub mod lift_for_differentiation;
+#[macro_use]
+pub mod lifting;
+
 pub mod jacobian;

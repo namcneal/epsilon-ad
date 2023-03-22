@@ -1,14 +1,13 @@
 use crate::epsilon_duals::dual_numbers::DualNumber;
-use crate::differentiation::lift_for_differentiation::*;
+use crate::differentiation::lifting::*;
 use crate::traits;
 
 use ndarray::{Array1, ArrayD};
 
-type JacobianTensor<T>  = ArrayD<T>;
 
-pub fn jacobian<T,F>(f: F, x:Array1<T>) -> JacobianTensor<T>
-where T : traits::Scalar,
-       F: FnOnce(&dyn LiftableArray<DualNumber<T>>) -> &dyn LiftableArray<DualNumber<T>>
+pub fn jacobian<T,F>(f: F, x:Array1<T>) -> ()
+where T : traits::Scalar + 'static,
+      F : Fn(&Array1<DualNumber<T>>) -> Array1<DualNumber<T>>
 {
     let _jacobian : ArrayD<T>;
 
@@ -16,12 +15,13 @@ where T : traits::Scalar,
     let derivative_id     : *const bool = &derivative_called;
     let derivative_id     : usize       = derivative_id as usize;
 
-    let lifted_x = LiftableArray::<DualNumber<T>>::lift_for_differentiation(x, derivative_id);
+    let lifted_x = LiftedArray::<T>::lift_for_differentiation(x, derivative_id);
 
-    let result =  f(&lifted_x as &dyn LiftableArray<DualNumber<T>>) ;
+    let result = f(&lifted_x);
+    
 
-    _jacobian
-    // println!("{:?}", result);
+    // let jacobian = result;
+    println!("{:?}", result);
 }
 
 
