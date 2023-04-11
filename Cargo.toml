@@ -1,0 +1,18 @@
+[package]
+name = "epsilon-ad"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+smallvec = "*"
+num = "*"
+ndarray = "*"
+num-traits = "*"
+overload = "*"
+duplicate = "1.0.0"
+
+num-bigfloat = "1.6.2"
+rust_decimal = "1.29.1"
+astro-float = "0.6.7"
