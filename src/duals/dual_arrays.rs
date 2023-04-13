@@ -17,6 +17,11 @@ impl<T: Scalar> DVector<T>{
          .unwrap()
     }
 
+    fn normalize(&mut self){
+        let norm = Self::inner(&*self, &*self).sqrt();
+        self.0.mapv_inplace(|u_i| u_i / norm.clone());
+    }
+
     fn projection(of:&Self, onto:&Self) -> DVector<T>{
         let scale = Self::inner(onto,of) / Self::inner(onto,onto);
         // println!("{:?}", Self::inner(onto,onto));
@@ -54,11 +59,12 @@ impl<T: Scalar> DVector<T>{
 			for ui in u.iter(){
 				uk.0 = uk.0 - Self::projection(&v[k],&ui).0;
 			}
-
 			u.push(uk);
 		}
 
-
+        for basis_vec in u.iter_mut(){
+            basis_vec.normalize();
+        }
 
 
         // let result : Vec<Array1<Perturbation<T>>> = u.iter()

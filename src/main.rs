@@ -46,12 +46,24 @@ fn main() {
 
 
     let f = DVector::<f64>::graham_schmidt_with_standard_basis;
+    let R = f(&x).map(|vi| vi.value);
     // let J = jacobian(f, &mut lifted_x).map(|dual| dual.value);
 
         // let jacobian = jacobian(f,&mut lifted_x).map(|dual| dual.value);
 
+    let d = x.0.len();
+    let mut test = ArrayD::from_elem(IxDyn(&[d,d]), 0.0);
+    for i in 0..d{
+        for j in 0..d{
+            for s in 0..d{
+                test[[i,j]] += R[[i,s]] * R[[j,s]]; 
+            }
+        }
+    }
 
-    println!("{:?}", f(&x).map(|vi| vi.value));
+
+
+    println!("{:?}", test);
 
     // println!("{:?}", t);
 
