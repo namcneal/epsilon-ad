@@ -3,6 +3,7 @@ use crate::scalar::Scalar;
 use crate::duals::epsilons::*;
 use crate::duals::perturbations::*;
 use std::ops::*;
+use std::collections::HashMap;
 
 
 /*
@@ -15,23 +16,14 @@ impl<T: Scalar> Add for &Perturbation<T>{
 
     // https://stackoverflow.com/questions/64226562/check-if-vec-contains-all-elements-from-another-vec
     fn add(self, rhs: Self) -> Self::Output {
-        let mut added_coeffs = self.coefficients.clone();
-        let mut added_terms  = self.products.clone();
+       let added_perturbation_data = Perturbation::combine_like_monomials(
+            self.coefficients.iter().cloned().chain(rhs.coefficients.iter().cloned()).collect(), 
+            self.products.iter().cloned().chain(rhs.products.iter().cloned()).collect()
+        );
+         
         
-        // Iterate through the RHS to find matches in the LHS,
-        // We want to see if a term's combination of individual epsilons is the same
-        for i in 0..added_terms.len(){
-            for (j, product) in rhs.products.iter().enumerate(){
-                if added_terms[i] == *product{
-                    added_coeffs[i] += rhs.coefficients[j].clone();
-                } else{
-                    added_coeffs.push(rhs.coefficients[i].clone());
-                    added_terms.push(rhs.products[i].clone());
-                }
-            }
-        }
-
-        Perturbation::<T>{coefficients : added_coeffs, products : added_terms}
+        Perturbation::<T>{coefficients : PerturbationData::from_vec(added_perturbation_data.0), 
+                          products     : PerturbationData::from_vec(added_perturbation_data.1)}
 
     }
 }

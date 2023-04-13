@@ -15,5 +15,16 @@ impl<T: Scalar> From<T> for Dual<T>{
         Dual::<T> { value: value, 
                     duals: Perturbation::<T>::empty_perturbation()}
     }
+
+    fn sqrt(&self) -> Self{
+        let mut derived_perturbations = self.duals.clone();
+        for epsilon_product in derived_perturbations.iter_mut(){
+            epsilon_product.coefficient = epsilon_product.coefficient;
+        }
+
+        Dual::<T>{value: self.value, 
+                  duals: derived_perturbations
+                  }
+    }
 }
 

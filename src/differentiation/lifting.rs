@@ -10,129 +10,49 @@ use crate::scalar::Scalar;
 
 use duplicate::duplicate_item;
 
-use ndarray::{Array, Array1, Array2};
+use ndarray::{Array, Array1, arr1};
 
 type DerivativeID = u64;
 
 pub trait Liftable<T> where T: Scalar{
-    fn as_any(&self) -> &dyn Any;
-
-    fn lift(&self) -> Dual<T>;
-    // fn forgetful_unlift(&self) -> T;
-
-    fn value(&self) -> T;
-    fn duals(&self) -> Perturbation<T>;
-
-    // fn neg(&self) -> Self;
+    fn lift(&self, invocation_id:DerivativeID) -> Array1<Dual<T>>;
 }
 
 #[duplicate_item(
     num_type;
-    [f32];
     [f64];
     [num_bigfloat::BigFloat];
 )]
 impl Liftable<num_type> for num_type{
-    fn lift(&self) -> Dual<num_type> {
-        Dual::<num_type> { value: *self, 
-                           duals: Perturbation::<num_type>::empty_perturbation()}
+    fn lift(&self, _:DerivativeID) -> Array1<Dual<num_type>> {
+        arr1(&[Dual::<num_type> { value: *self, 
+                                     duals: Perturbation::<num_type>::empty_perturbation()}
+              ]
+            )
     }
 
-    fn value(&self) -> num_type {
-        *self
-    }
-
-    fn duals(&self) -> Perturbation<num_type>{
-        Perturbation::<num_type>::empty_perturbation()
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 }
 
 
 
 impl<T: Scalar> Liftable<T> for Dual<T>{
-    fn lift(&self) -> Dual<T>{
-        self.clone()
-    }
-
-    fn value(&self) -> T {
-        self.value
-    }
-
-    fn duals(&self) -> Perturbation<T> {
-        self.duals.clone()
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
+    fn lift(&self, _:DerivativeID) -> Array1<Dual<T>>{
+        arr1(&[self.clone()])
     }
 }
 
+impl<T:Scalar> Liftable<T> for Array1<T>{
+    fn lift(&self, derivative_invocation_id:DerivativeID) -> Array1<Dual<T>>{
+        let mut lifted : Array1<Dual<T>> = Array::from_elem((self.len(),), Dual::<T>::zero());
 
-impl<T: Scalar> Liftable<T> for Box<dyn Liftable<T>>{
-    fn lift(&self) -> Dual<T> {
-        (**self).lift()
-    }
+        for (direction, xi) in self.iter().enumerate(){
+            let perturbation = Perturbation::<T>::singleton_product(derivative_invocation_id, direction as u64);
+            lifted[direction] = Dual::<T>{value: *xi, duals: perturbation};
+        }
 
-    fn value(&self) -> T {
-        (**self).value()
-
-    }
-
-    fn duals(&self) -> Perturbation<T> {
-        (**self).duals()
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
+        return lifted
     }
 }
-
-
-// enum DerivativeDirection{
-//     One(u64),
-//     Array
-// }
-
-// pub trait Liftable{
-//     fn lift_to_dual(&self, derivative_invocation_id:DerivativeID) -> Dual<Self>
-//     where Self: Scalar;
-//     // fn forgetful_unlift(&self) -> Self;
-// }
-
-// use num_bigfloat;
-// use astro_float;
-
-// #[duplicate_item(
-//     num_type;
-//     [f32];
-//     [f64];
-//     [num_bigfloat::BigFloat];
-//     [astro_float::BigFloat];
-// )]
-// impl Liftable for num_type{
-//     fn lift_to_dual(self:T, derivative_invocation_id:DerivativeID) -> Dual<T> {
-//         Dual::<Self>::from(self)
-//     }
-// }
-
-// impl Liftable for Array1<dyn Liftable>{
-//     fn lift_to_dual(&self, derivative_invocation_id:DerivativeID) -> Dual<Self>
-//         where Self : Scalar {
-//             let mut lifted : Array1<Dual<Self>> = Array::from_elem((self.len(),), Dual::<Self>::zero());
-
-//         for (direction, xi) in self.iter().enumerate(){
-//             let perturbation = Perturbation::<Self>::singleton_product(derivative_invocation_id, direction as u64);
-//             lifted[direction] = Dual::<Self>{value: *xi, duals: perturbation};
-//         }
-
-//         return lifted
-        
-//     }
-// }
 
 
 
