@@ -1,3 +1,6 @@
+use std::ops::{Mul,Deref,DerefMut};
+
+
 type DerivativeInvocationID = u64;
 type DerivativeDirection = u64;
 
@@ -17,7 +20,7 @@ impl EpsilonID{
 
 type AggregateID = u128;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy,Clone)]
 pub struct NonEmptyEpsilonProduct{
     pub epsilons_within : AggregateID,
     pub num_epsilons : u8
@@ -50,13 +53,26 @@ impl PartialEq for NonEmptyEpsilonProduct{
 
 pub struct EpsilonProduct(pub (super) Option<NonEmptyEpsilonProduct>);
 
+impl Deref for EpsilonProduct{
+    type Target = Option<NonEmptyEpsilonProduct>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for EpsilonProduct{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl From<NonEmptyEpsilonProduct> for EpsilonProduct{
     fn from(value: NonEmptyEpsilonProduct) -> Self {
         EpsilonProduct(Some(value))
     }
 }
 
-use std::ops::Mul;
 impl Mul for &NonEmptyEpsilonProduct{
     type Output = EpsilonProduct;
 

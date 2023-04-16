@@ -6,8 +6,8 @@ use num_traits::abs;
 use std::collections::HashMap;
 
 const SMALL_VEC_NUMBER_ELEMENTS : usize = 128;
-pub (super) const SVNE : usize = SMALL_VEC_NUMBER_ELEMENTS;
-pub (super) type PerturbationData<T> = SmallVec<[T; SVNE]>;
+pub (crate) const SVNE : usize = SMALL_VEC_NUMBER_ELEMENTS;
+pub (crate) type PerturbationData<T> = SmallVec<[T; SVNE]>;
 
 
 #[derive(Debug, Clone, PartialEq)]

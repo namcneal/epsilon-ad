@@ -1,4 +1,7 @@
-use crate::duals::{duals::*, perturbations::*};
+use crate::prelude::*;
+use crate::differentiation::types::*;
+use crate::duals::perturbations::Perturbation;
+
 use num::Float;
 use num_traits::{Zero, One};
 use std::ops::*;
@@ -10,12 +13,13 @@ use crate::scalar::Scalar;
 
 use duplicate::duplicate_item;
 
-use ndarray::{Array, Array1, arr1};
+use ndarray::{Array, arr0, arr1,Array0,Array1,ArrayD,Dim};
 
-type DerivativeID = u64;
+pub (crate) type DerivativeID = u64;
 
-pub trait Liftable<T> where T: Scalar{
-    fn lift(&self, invocation_id:DerivativeID) -> Array1<Dual<T>>;
+pub trait Lift<T,D> 
+where T: Scalar, D: ndarray::Dimension{
+    fn lift(&self) -> EArray<T,D>;
 }
 
 #[duplicate_item(
@@ -23,95 +27,58 @@ pub trait Liftable<T> where T: Scalar{
     [f64];
     [num_bigfloat::BigFloat];
 )]
-impl Liftable<num_type> for num_type{
-    fn lift(&self, _:DerivativeID) -> Array1<Dual<num_type>> {
-        arr1(&[Dual::<num_type> { value: *self, 
-                                     duals: Perturbation::<num_type>::empty_perturbation()}
-              ]
-            )
+impl Lift<num_type,ndarray::Ix0> for num_type{
+    fn lift(&self) -> EReal<num_type> {
+        let dual = Dual::<num_type> { value: *self, 
+                                      duals: Perturbation::<num_type>::empty_perturbation()};
+        EArray::<num_type,ndarray::Ix0>(arr0(dual))
+    }
+}
+
+
+impl<T:Scalar> Lift<T,ndarray::Ix1> for Vec<T>{
+    fn lift(&self) -> EVector<T>{
+        let lifted : Vec<Dual<T>> = self.iter().map(|el| Dual::<T>::from(*el)).collect();
+        EArray::<T,ndarray::Ix1>(arr1(&lifted))
     }
 
 }
 
-
-
-impl<T: Scalar> Liftable<T> for Dual<T>{
-    fn lift(&self, _:DerivativeID) -> Array1<Dual<T>>{
-        arr1(&[self.clone()])
-    }
-}
-
-impl<T:Scalar> Liftable<T> for Array1<T>{
-    fn lift(&self, derivative_invocation_id:DerivativeID) -> Array1<Dual<T>>{
-        let mut lifted : Array1<Dual<T>> = Array::from_elem((self.len(),), Dual::<T>::zero());
-
-        for (direction, xi) in self.iter().enumerate(){
-            let perturbation = Perturbation::<T>::singleton_product(derivative_invocation_id, direction as u64);
-            lifted[direction] = Dual::<T>{value: *xi, duals: perturbation};
-        }
-
-        return lifted
+impl<T:Scalar, D:ndarray::Dimension> Lift<T,D> for Array<T,D>{
+    fn lift(&self) -> EArray<T,D>{
+        EArray::<T,D>((*self).mapv(|el| Dual::<T>::from(el)))
     }
 }
 
 
 
+pub trait Unlift<T:Scalar>{
+    type Target;
+    fn unlift(&self) -> Self::Target;
+}
 
+#[duplicate_item(
+    num_type;
+    [f64];
+    [num_bigfloat::BigFloat];
+)]
+impl Unlift<num_type> for EReal<num_type>{
+    type Target = num_type;
+    fn unlift(&self) -> num_type {
+        self[Dim(())].value
+    }
+}
 
+impl<T:Scalar> Unlift<T> for EVector<T>{
+    type Target = Array1<T>;
+    fn unlift(&self) -> Self::Target {
+        self.map(|el| el.value)
+    }
+}
 
-// pub trait LiftedArray<T: Scalar>{
-//     fn lift_for_differentiation(self:Self,derivative_id:DerivativeID) -> Array1<Dual<T>>;
-// }
-
-// impl<'a, T: Scalar> LiftedArray<T> for Array1<T>{
-    
-//     fn lift_for_differentiation(self:Self,derivative_id:DerivativeID) -> Array1<Dual<T>> {
-//         let mut lifted : Array1<Dual<T>> = Array::from_elem((self.len(),), Dual::<T>::zero());
-
-//         for (direction, xi) in self.iter().enumerate(){
-//             let perturbation = Perturbation::<T>::singleton_product(derivative_id, direction as u64);
-//             lifted[direction] = Dual::<T>{value: *xi, duals: perturbation};
-//         }
-
-//         return lifted
-//     }
-// }
-
-// impl<'a, T:Scalar> LiftedArray<T> for Array1<Dual<T>>{
-    
-//     fn lift_for_differentiation(self:Self, derivative_id: DerivativeID) -> Array1<Dual<T>> {
-//         let mut lifted : Array1<Dual<T>> = Array::from_elem((self.len(),), Dual::<T>::zero());
-
-//         for (direction, xi) in self.iter().enumerate(){
-
-//             let new_perturbation = Perturbation::<T>::singleton_product(derivative_id, direction as u64);
-//             lifted[direction] = Dual::<T>{value: xi.value, duals: &new_perturbation + &(xi.duals)}
-//         }
-
-//         return lifted
-//     }
-// }
-
-// macro_rules! lift_function{
-
-//     (fn $name:ident<T:; $($rest:tt*)*) => {
-//         lift_function!($rest*)
-//     };
-
-//     (fn $name:ident<T>($input:ident:&Array1<T>) -> Array1<T> $def:block) => {
-
-//         fn $name<T: Scalar>($input: &Array1<Dual<T>>) -> Array1<Dual<T>> {$def}
-
-//     };
-
-//     (fn $name:ident<T:$trait_bounds:path>($input:ident:&Array1<T>) -> Array1<T> $def:block) => {
-
-//         fn $name<T: Scalar + $trait_bounds>($input: &Array1<Dual<T>>) -> Array1<Dual<T>> {$def}
-
-//     };
-// }
-
-// pub fn forgetful_unlift<T: Scalar>(lifted_array:&mut Array2<Dual<T>>) -> Array2<T>{
-//     // let lifting_forgotten = ArrayD::<T>::zeros(lifted_array.shape());
-//     lifted_array.map_mut(|dual| dual.value)
-// }
+impl<T:Scalar> Unlift<T> for EArrayD<T>{
+    type Target = ArrayD<T>;
+    fn unlift(&self) -> Self::Target {
+        self.map(|el| el.value)
+    }
+}

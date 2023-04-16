@@ -1,5 +1,4 @@
 // #[macro_use]
+mod types;
 pub mod lifting;
-// pub mod lifting_traits;
-
 pub mod jacobian;

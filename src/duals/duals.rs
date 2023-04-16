@@ -2,6 +2,7 @@ use num::Zero;
 
 use crate::duals::perturbations::*;
 use crate::scalar::Scalar;
+use std::iter::repeat;
 use std::ops::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -18,7 +19,11 @@ impl<T: Scalar> From<T> for Dual<T>{
 }
 
 impl<T: Scalar> Dual<T>{
-    pub (crate) fn sqrt(&self) -> Self{
+    pub fn zero() -> Self{
+        Self::from(T::zero())
+    }
+
+    pub fn sqrt(&self) -> Self{
         let mut derived_perturbations = self.duals.clone();
         for c in derived_perturbations.coefficients.iter_mut(){
             *c = <T as From<f64>>::from(0.5) / c.sqrt();
@@ -27,6 +32,13 @@ impl<T: Scalar> Dual<T>{
         Dual::<T>{value: self.value.sqrt(), 
                   duals: derived_perturbations
                   }
+    }
+
+    pub fn pow(self, k:usize) -> Dual<T>{
+        repeat(self)
+            .take(k)
+            .reduce(|accum, item| accum*item)
+            .unwrap()
     }
 }
 

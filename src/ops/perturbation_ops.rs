@@ -1,9 +1,8 @@
-
-use crate::scalar::Scalar;
-use crate::duals::epsilons::*;
-use crate::duals::perturbations::*;
 use std::ops::*;
-use std::collections::HashMap;
+
+use crate::duals::epsilons::NonEmptyEpsilonProduct;
+use crate::duals::perturbations::*;
+use crate::prelude::*;
 
 
 /*
@@ -95,9 +94,9 @@ impl<T: Scalar> Mul for &Perturbation<T> {
 
         for (i, a) in self.products.iter().enumerate() {
             for (j, b) in rhs.products.iter().enumerate(){
-                match (a * b).0{
+                match &*(a * b){
                     Some(epsilon_product) => {
-                        products.push(epsilon_product);
+                        products.push(*epsilon_product);
                         coeffs.push(self.coefficients[i] * rhs.coefficients[j])
                     }
                     None => (),

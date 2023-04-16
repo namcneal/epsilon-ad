@@ -18,11 +18,28 @@ impl<T: Scalar> Add for &Dual<T>{
     }
 }
 
+impl<T: Scalar> Add<T> for &Dual<T>{
+    type Output = Dual<T>;
+
+    fn add(self:Self, rhs: T) -> Self::Output {
+        Dual::<T>{value : self.value+rhs, duals: self.duals.clone()}
+    }
+}
+
 impl<T: Scalar> Add for Dual<T>{
     type Output = Dual<T>;
 
     fn add(self:Self, rhs: Self) -> Self::Output {
         <&Self>::add(&self, &rhs)
+
+    }
+}
+
+impl<T: Scalar> Add<T> for Dual<T>{
+    type Output = Dual<T>;
+
+    fn add(self:Self, rhs: T) -> Self::Output {
+        <&Self>::add(&self, rhs)
 
     }
 }
@@ -82,6 +99,14 @@ impl<T: Scalar> Mul for &Dual<T>{
     }
 }
 
+impl<T: Scalar> Mul<T> for &Dual<T>{
+    type Output = Dual<T>;
+
+    fn mul(self:Self, rhs: T) -> Self::Output {
+        Dual::<T>{value : self.value*rhs, duals: &self.duals * rhs}
+    }
+}
+
 impl<T: Scalar> Mul for Dual<T>{
     type Output = Dual<T>;
 
@@ -89,6 +114,15 @@ impl<T: Scalar> Mul for Dual<T>{
         <&Self>::mul(&self, &rhs)
     }
 }
+
+impl<T: Scalar> Mul<T> for Dual<T>{
+    type Output = Dual<T>;
+
+    fn mul(self:Self, rhs: T) -> Self::Output {
+        Dual::<T>{value : self.value*rhs, duals: &self.duals * rhs}
+    }
+}
+
 
 impl<T:Scalar> One for Dual<T>{
    fn one() -> Self {
@@ -112,11 +146,29 @@ impl<T: Scalar> Div for &Dual<T>{
     }
 }
 
+impl<T: Scalar> Div<T> for &Dual<T>{
+    type Output = Dual<T>;
+
+    fn div(self:Self, rhs: T) -> Self::Output {
+        Dual::<T>{value: self.value/rhs, 
+                  duals:&self.duals/rhs}
+    }
+}
+
 impl<T: Scalar> Div for Dual<T>{
     type Output = Dual<T>;
 
     fn div(self:Self, rhs: Self) -> Self::Output {
         <&Self>::div(&self, &rhs)
+    }
+}
+
+impl<T: Scalar> Div<T> for Dual<T>{
+    type Output = Dual<T>;
+
+    fn div(self:Self, rhs: T) -> Self::Output {
+        Dual::<T>{value: self.value/rhs, 
+                  duals:&self.duals/rhs}
     }
 }
 

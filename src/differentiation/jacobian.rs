@@ -1,20 +1,27 @@
-use crate::duals::duals::Dual;
-use crate::duals::perturbations::*;
+use crate::prelude::*;
 use crate::duals::epsilons::{EpsilonID, NonEmptyEpsilonProduct};
-// use crate::differentiation::lifting::*;
-use crate::duals::dual_arrays::*;
-use crate::scalar::Scalar;
+use crate::duals::perturbations::*;
 
 use std::iter::zip;
-use ndarray::{IxDyn, Array1, ArrayD, Array2, s};
+use ndarray::{IxDyn, Array, ArrayD, Array2, s, Dimension};
 use num::Zero;
 
 
-pub fn jacobian<'a, T,F>(f: F, x:&mut DVector<T>) -> ArrayD<Dual<T>>
+pub struct JacobianResult<T:Scalar,D:ndarray::Dimension>{
+    pub value   :    Array<T,D>,
+    pub jacobian:    EArray<T,ndarray::IxDyn>
+}
+
+
+pub fn jacobian<'a, T,F,D1,D2>(f: F, x:&Array<T,D1>) -> JacobianResult<T,D2>
 where T  : Scalar+'a,
-      F  : Fn(&DVector<T>) -> ArrayD<Dual<T>>
+      D1 : ndarray::Dimension,
+      D2 : ndarray::Dimension,
+      F  : Fn(&EArray<T,D1>) -> EArray<T,D2>
 {
     // let _jacobian : ArrayD<T>;
+
+    let mut x = x.lift();
 
     let derivative_called : bool  = true;
     let derivative_id     : u64   = (&derivative_called as *const bool) as u64;
@@ -24,15 +31,17 @@ where T  : Scalar+'a,
         (*xi).duals = perturbation;
     }
 
-    let result = f(x);
+    let result = f(&x);
 
-    // return result
+    let result_principal_values = result.clone().map(|el| el.value);
+    let result_infinimal_values = extract_derivative(x.0.len(), &result, derivative_id);
     
-    extract_derivative(x.0.len(), &result, derivative_id)
+    JacobianResult{value:    result_principal_values, 
+                   jacobian: result_infinimal_values}
 
 }
 
-pub fn extract_derivative<T: Scalar>(input_dimension:usize, with_duals:&ArrayD<Dual<T>>, invocation_id:u64) -> ArrayD<Dual<T>>{
+pub fn extract_derivative<T: Scalar,D:Dimension>(input_dimension:usize, with_duals:&EArray<T,D>, invocation_id:u64) -> EArrayD<T>{
     let original_shape = with_duals.shape();
     
     let mut extracted : Array2<Dual<T>> = ndarray::Array2::<Dual<T>>::zeros((with_duals.len(), input_dimension));
@@ -68,7 +77,7 @@ pub fn extract_derivative<T: Scalar>(input_dimension:usize, with_duals:&ArrayD<D
     let mut jacobian_shape = original_shape.clone().to_vec();
     jacobian_shape.append(&mut vec![input_dimension]);
 
-    extracted.to_shared().reshape(IxDyn(&jacobian_shape)).to_owned()
+    EArray::<T,ndarray::IxDyn>(extracted.to_shared().reshape(IxDyn(&jacobian_shape)).to_owned())
 
 }
 
