@@ -1,5 +1,5 @@
 
-use crate::duals::epsilons::*;
+use crate::epsilon_duals::epsilons::*;
 use crate::scalar::Scalar;
 use smallvec::SmallVec;
 use num_traits::abs;

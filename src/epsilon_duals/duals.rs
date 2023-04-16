@@ -1,6 +1,6 @@
 use num::Zero;
 
-use crate::duals::perturbations::*;
+use crate::epsilon_duals::perturbations::*;
 use crate::scalar::Scalar;
 use std::iter::repeat;
 use std::ops::*;
@@ -23,6 +23,11 @@ impl<T: Scalar> Dual<T>{
         Self::from(T::zero())
     }
 
+    pub fn one() -> Self{
+        Self::from(T::one())
+    }
+
+
     pub fn sqrt(&self) -> Self{
         let mut derived_perturbations = self.duals.clone();
         for c in derived_perturbations.coefficients.iter_mut(){
@@ -34,11 +39,10 @@ impl<T: Scalar> Dual<T>{
                   }
     }
 
-    pub fn pow(self, k:usize) -> Dual<T>{
+    pub fn pow(&self, k:usize) -> Dual<T>{
         repeat(self)
             .take(k)
-            .reduce(|accum, item| accum*item)
-            .unwrap()
+            .fold(Dual::<T>::one(), |acc,item| &acc*item)
     }
 }
 

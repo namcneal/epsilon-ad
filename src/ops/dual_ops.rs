@@ -1,5 +1,5 @@
-use crate::duals::duals::*;
-use crate::duals::perturbations::*;
+use crate::epsilon_duals::duals::*;
+use crate::epsilon_duals::perturbations::*;
 use crate::scalar::Scalar;
 
 use std::ops::*;

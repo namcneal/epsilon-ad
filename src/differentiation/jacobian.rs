@@ -1,6 +1,6 @@
 use crate::prelude::*;
-use crate::duals::epsilons::{EpsilonID, NonEmptyEpsilonProduct};
-use crate::duals::perturbations::*;
+use crate::epsilon_duals::epsilons::{EpsilonID, NonEmptyEpsilonProduct};
+use crate::epsilon_duals::perturbations::*;
 
 use std::iter::zip;
 use ndarray::{IxDyn, Array, ArrayD, Array2, s, Dimension};

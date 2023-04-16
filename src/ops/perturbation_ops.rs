@@ -1,7 +1,7 @@
 use std::ops::*;
 
-use crate::duals::epsilons::NonEmptyEpsilonProduct;
-use crate::duals::perturbations::*;
+use crate::epsilon_duals::epsilons::NonEmptyEpsilonProduct;
+use crate::epsilon_duals::perturbations::*;
 use crate::prelude::*;
 
 

@@ -1,6 +1,5 @@
 use crate::prelude::*;
-use crate::differentiation::types::*;
-use crate::duals::perturbations::Perturbation;
+use crate::epsilon_duals::perturbations::Perturbation;
 
 use num::Float;
 use num_traits::{Zero, One};
