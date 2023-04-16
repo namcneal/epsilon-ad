@@ -28,6 +28,9 @@ fn test_square(){
 	}
 }
 
+
+
+
 #[test]
 fn test_pow(){
 	fn f(x:f64,k:usize) -> f64{
@@ -67,3 +70,20 @@ fn test_pow(){
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
