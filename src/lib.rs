@@ -3,7 +3,6 @@
 pub mod scalar;
 pub mod epsilon_duals;
 pub mod epsilon_arrays;
-pub mod epsilon_polynomials;
 pub mod ops;
 pub mod differentiation;
 
@@ -13,8 +12,6 @@ pub mod prelude {
 	pub use crate::epsilon_duals::duals::*;
 	pub use crate::epsilon_arrays::arrays::*;
 	pub use crate::epsilon_arrays::standard_basis::*;
-	pub use crate::epsilon_polynomials::monomials;
-
 	pub use crate::differentiation::lifting::*;
 	pub use crate::differentiation::jacobian::*;
 }
