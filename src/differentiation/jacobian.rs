@@ -6,7 +6,7 @@ use std::iter::zip;
 use ndarray::{IxDyn, Array, ArrayD, Array2, s, Dimension};
 use num::Zero;
 
-
+#[derive(Debug,Clone)]
 pub struct JacobianResult<T:Scalar,D:ndarray::Dimension>{
     pub value   :    Array<T,D>,
     pub jacobian:    EArray<T,ndarray::IxDyn>
