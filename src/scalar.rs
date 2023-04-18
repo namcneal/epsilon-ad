@@ -5,7 +5,9 @@ use core::fmt::Debug;
 
 
 pub trait Scalar : Debug + Clone + Copy + 'static + 
-                   Float + Signed +  AddAssign + MulAssign +Zero + One +
+                   Float + Signed  + Zero + One + 
+                   AddAssign + SubAssign + MulAssign + DivAssign +
+                   std::iter::Sum +
                    From<f64>
                   {}
 
