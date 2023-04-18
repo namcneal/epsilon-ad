@@ -1,10 +1,13 @@
 use crate::prelude::*;
 use crate::epsilon_duals::epsilons::{EpsilonID, NonEmptyEpsilonProduct};
 use crate::epsilon_duals::perturbations::*;
+use crate::differentiation::derivative_ids;
 
 use std::iter::zip;
 use ndarray::{IxDyn, Array, ArrayD, Array2, s, Dimension};
 use num::Zero;
+
+use super::derivative_ids::DerivativeInvocation;
 
 #[derive(Debug,Clone)]
 pub struct JacobianResult<T:Scalar,D:ndarray::Dimension>{
@@ -20,8 +23,8 @@ where T  : Scalar+'a,
       F  : Fn(&EArray<T,D1>) -> EArray<T,D2>
 {
     let mut x = x.clone();
-    let derivative_called : bool  = true;
-    let derivative_id     : u64   = (&derivative_called as *const bool) as u64;
+    let derivative_called = DerivativeInvocation;
+    let derivative_id     : u64   = (&derivative_called as *const DerivativeInvocation) as u64;
 
     for (direction, xi) in x.0.iter_mut().enumerate(){
         let perturbation = Perturbation::<T>::singleton_product(derivative_id, direction as u64);

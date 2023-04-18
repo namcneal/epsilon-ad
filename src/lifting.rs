@@ -14,8 +14,6 @@ use duplicate::duplicate_item;
 
 use ndarray::{Array, arr0, arr1,Array0,Array1,ArrayD,Dim};
 
-pub (crate) type DerivativeID = u64;
-
 pub trait Lift<T,D> 
 where T: Scalar{
     type Target;
