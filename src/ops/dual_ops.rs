@@ -103,7 +103,8 @@ impl<T: Scalar> Mul<T> for &Dual<T>{
     type Output = Dual<T>;
 
     fn mul(self:Self, rhs: T) -> Self::Output {
-        Dual::<T>{value : self.value*rhs, duals: &self.duals * rhs}
+        Dual::<T>{value : self.value  * rhs, 
+                  duals : &self.duals * rhs}
     }
 }
 
@@ -142,7 +143,7 @@ impl<T: Scalar> Div for &Dual<T>{
 
     fn div(self:Self, rhs: Self) -> Self::Output {
         Dual::<T>{value: self.value/rhs.value, 
-                  duals: &(&self.duals/rhs.value) + &(&rhs.duals*self.value/pow(rhs.value,2))}
+                  duals: (&(&self.duals * rhs.value) - &(&rhs.duals * self.value)) / pow(rhs.value,2)}
     }
 }
 
@@ -159,7 +160,7 @@ impl<T: Scalar> Div for Dual<T>{
     type Output = Dual<T>;
 
     fn div(self:Self, rhs: Self) -> Self::Output {
-        <&Self>::div(&self, &rhs)
+        &self / &rhs
     }
 }
 
@@ -167,8 +168,7 @@ impl<T: Scalar> Div<T> for Dual<T>{
     type Output = Dual<T>;
 
     fn div(self:Self, rhs: T) -> Self::Output {
-        Dual::<T>{value: self.value/rhs, 
-                  duals:&self.duals/rhs}
+       &self / rhs
     }
 }
 

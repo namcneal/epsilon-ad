@@ -6,7 +6,8 @@ type DerivativeDirection = u64;
 
 #[derive(Debug)]
 pub struct EpsilonID(pub DerivativeInvocationID, pub DerivativeDirection);
-type ReducedEpsilonID = u128;
+pub (crate) type ReducedEpsilonID = u128;
+pub (crate) type EpsilonCount = u8;
 
 
 
@@ -18,7 +19,7 @@ impl EpsilonID{
     }
 }
 
-type AggregateID = u128;
+pub (crate) type AggregateID = u128;
 
 #[derive(Debug, Copy,Clone)]
 pub struct NonEmptyEpsilonProduct{

@@ -48,13 +48,21 @@ impl<T: Scalar> From<T> for EReal<T>{
     }
 }
 
-impl<T: Scalar> EVector<T>{
-	pub fn from_vec(val:Vec<Dual<T>>) -> EVector<T>{
-        EArray::<T,ndarray::Ix1>(arr1(&val))
+impl<T: Scalar> From<&[T]> for EVector<T>{
+	fn from(s:&[T]) -> EVector<T>{
+        <[T] as Lift<T,()>>::lift(s)
     }
+}
 
-    pub fn from_arr(val:Array1<Dual<T>>) -> EVector<T>{
-        EArray::<T,ndarray::Ix1>(val)
+impl<T: Scalar> From<&[Dual<T>]> for EVector<T>{
+	fn from(s:&[Dual<T>]) -> EVector<T>{
+        Self::from_dual_slice(s)
+    }
+}
+
+impl<T: Scalar> EVector<T>{
+    pub fn from_dual_slice(s:&[Dual<T>]) -> EVector<T>{
+        EArray::<T,ndarray::Ix1>(arr1(s))
     }
 
     pub fn inner(u:&Self, v:&Self) -> EReal<T>{

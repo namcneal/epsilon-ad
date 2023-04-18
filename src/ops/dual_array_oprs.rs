@@ -53,7 +53,7 @@ impl<T: Scalar, D: ndarray::Dimension> Div for &EArray<T,D>{
 	type Output = EArray<T,D>;
 
 	fn div(self, rhs: Self) -> Self::Output {
-		EArray::<T,D>(&self.0 * &rhs.0)
+		EArray::<T,D>(&self.0 / &rhs.0)
 	}
 }
 

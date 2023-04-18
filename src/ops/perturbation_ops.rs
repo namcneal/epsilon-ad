@@ -15,15 +15,10 @@ impl<T: Scalar> Add for &Perturbation<T>{
 
     // https://stackoverflow.com/questions/64226562/check-if-vec-contains-all-elements-from-another-vec
     fn add(self, rhs: Self) -> Self::Output {
-       let added_perturbation_data = Perturbation::combine_like_monomials(
-            self.coefficients.iter().cloned().chain(rhs.coefficients.iter().cloned()).collect(), 
-            self.products.iter().cloned().chain(rhs.products.iter().cloned()).collect()
-        );
-         
-        
-        Perturbation::<T>{coefficients : PerturbationData::from_vec(added_perturbation_data.0), 
-                          products     : PerturbationData::from_vec(added_perturbation_data.1)}
-
+       Perturbation::combine_like_monomials(
+         self.coefficients.iter().cloned().chain(rhs.coefficients.iter().cloned()).collect(), 
+                self.products.iter().cloned().chain(    rhs.products.iter().cloned()).collect()
+        )
     }
 }
 
@@ -55,24 +50,12 @@ impl<T: Scalar> Sub for &Perturbation<T>{
 
     // https://stackoverflow.com/questions/64226562/check-if-vec-contains-all-elements-from-another-vec
     fn sub(self, rhs: Self) -> Self::Output {
-        let mut added_coeffs = self.coefficients.clone();
-        let mut added_terms  = self.products.clone();
-        
-        // Iterate through the RHS to find matches in the LHS,
-        // We want to see if a term's combination of individual epsilons is the same
-        for i in 0..added_terms.len(){
-            for (j, product) in rhs.products.iter().enumerate(){
-                if added_terms[i] == *product{
-                    added_coeffs[i] = added_coeffs[i] - rhs.coefficients[j];
-                } else{
-                    added_coeffs.push(-rhs.coefficients[i]);
-                    added_terms.push(rhs.products[i].clone());
-                }
-            }
-
+        let mut negated_rhs = rhs.clone();
+        for element in negated_rhs.coefficients.iter_mut(){
+            *element = -*element;
         }
 
-        Perturbation::<T>{coefficients : added_coeffs, products : added_terms}
+        self + &negated_rhs
 
     }
 }
@@ -128,7 +111,15 @@ impl<T: Scalar> Mul<T> for &Perturbation<T> {
         let mut new_coefficients = PerturbationData::<T>::new();
         for coeff in self.coefficients.iter(){
             new_coefficients.push(*coeff*rhs);
-        }
+        }T
+
+        let new_coefficients = smallvec::SmallVec::from(
+            self.coefficients
+                .iter()
+                .map(|coeff:&T| *coeff * rhs)
+                .collect::<Vec<T>>()
+                .as_slice()
+        );
 
         Perturbation::<T>{coefficients: new_coefficients, products: self.products.clone()}
     }
@@ -143,17 +134,16 @@ impl <T: Scalar> Div<T> for &Perturbation<T>{
     type Output = Perturbation<T>;
 
     fn div(self, rhs: T) -> Self::Output {
-        Self::mul(self, T::div(T::one(),rhs))
+        self *  (T::one() / rhs)
     }
 }
 
 
 impl<T: Scalar> Div<T> for Perturbation<T> {
-    
     type Output = Perturbation<T>;
 
     fn div(self, rhs: T) -> Self::Output {
-        <&Self>::div(&self, rhs)
+        &self / rhs
     }
 }
 

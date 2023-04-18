@@ -5,6 +5,7 @@ use rand::prelude::*;
 use rand_distr::Normal;
 use rand::seq::IteratorRandom;
 
+#[derive(Debug, Clone)]
 pub (crate) struct EMonomial<T: Scalar, const D: usize>{
 	coefficient: T,
 	exponents  : [u32; D],
@@ -19,8 +20,8 @@ impl<T: Scalar, const D: usize> EMonomial<T,D>{
 		)
 	}
 
-	pub (crate) fn random_normal() -> EMonomial<T, D>{	
-		let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+	pub (crate) fn random_normal(seed:u64) -> EMonomial<T, D>{	
+		let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
 		
 		let normal = Normal::new(0.0, 1.0).unwrap();
 		let coefficient= <T as From<f64>>::from(normal.sample(&mut rng));

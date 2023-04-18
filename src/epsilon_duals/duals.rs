@@ -5,10 +5,25 @@ use crate::scalar::Scalar;
 use std::iter::repeat;
 use std::ops::*;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Dual<T: Scalar>{
     pub value : T,
     pub duals : Perturbation<T>
+}
+
+impl<T: Scalar> std::fmt::Debug for Dual<T>{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut representation = String::new();
+        representation.push_str(
+            &format!("{:?}", self.duals)
+        );
+        representation.push_str(
+            &format!("{:?}", self.value)
+        );
+
+        write!(f, "{}", &representation)
+
+    }
 }
 
 impl<T: Scalar> From<T> for Dual<T>{

@@ -2,7 +2,7 @@ use epsilon_ad::prelude::*;
 use num::{range, pow}; 
 
 #[test]
-fn test_square(){
+fn square(){
 	fn f(x:f64) -> f64{
 		x*x
 	}
@@ -29,7 +29,7 @@ fn test_square(){
 }
 
 #[test]
-fn test_pow(){
+fn _pow(){
 	fn f(x:f64,k:usize) -> f64{
 		pow(x,k)
 	}
@@ -68,28 +68,3 @@ fn test_pow(){
 	}
 }
  
-
-mod epsilon_polynomials;
-use epsilon_polynomials::monomials::*;
-
-#[test]
-fn test_on_random_monomials1(){
-	let num_monomials:usize = 500;
-	let maximum_power:u32   = 20;
-	
-	for i in 1..100{
-		let input = EVector::from_vec(vec![Dual::from(i as f64)]);
-		for _ in 0..num_monomials{
-			let monomial = EMonomial::<f64,1>::random_normal();
-			
-			let analytic_result = monomial.analytic_gradient(&input);
-			let epsilon_result  = monomial.epsilon_gradient(&input.values());
-
-			let ratio = &analytic_result / &epsilon_result;
-			let distance = ratio.map(|el| pow(*el-1.0,2)).sum();
-
-			println!("Expected: {}\n,Received: {}, Ratio:{}", &analytic_result, &epsilon_result, ratio);
-			assert!(distance < 1e-16)
-		}	
-	}
-}

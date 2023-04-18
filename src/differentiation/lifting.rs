@@ -17,7 +17,7 @@ use ndarray::{Array, arr0, arr1,Array0,Array1,ArrayD,Dim};
 pub (crate) type DerivativeID = u64;
 
 pub (crate) trait Lift<T,D> 
-where T: Scalar, D: ndarray::Dimension{
+where T: Scalar{
     type Target;
     fn lift(&self) -> Self::Target;
 }
@@ -52,6 +52,13 @@ impl<T:Scalar, D:ndarray::Dimension> Lift<T,D> for Array<T,D>{
     type Target = EArray<T,D>;
     fn lift(&self) -> Self::Target{
         EArray::<T,D>((*self).mapv(|el| Dual::<T>::from(el)))
+    }
+}
+
+impl<T:Scalar, D> Lift<T,D> for [T]{
+    type Target = EVector<T>;
+    fn lift(&self) -> Self::Target{
+        arr1(self).lift()
     }
 }
 
