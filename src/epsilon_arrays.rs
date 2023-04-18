@@ -97,3 +97,25 @@ impl<T: Scalar> EVector<T>{
         return projection;
     }
 }
+
+
+impl<T: Scalar> EMatrix<T>{
+    pub fn mat_mul(&self, rhs:&Self) -> Self{
+        let lhs_shape = (*self).shape();
+        let rhs_shape = (*rhs).shape();
+        let mismatch_size_err = format!("Could not multiply matrices of shapes {:?} and {:?}", &lhs_shape, &rhs_shape);
+        assert!(lhs_shape[1]==rhs_shape[0], "{}", &mismatch_size_err);
+
+        let mut result = Array::from_elem([lhs_shape[0], rhs_shape[1]], Dual::<T>::zero());
+        for i in 0..lhs_shape[0]{
+            for j in 0..rhs_shape[1]{
+                for s in 0..lhs_shape[1]{
+                    let multiplied_elements = &(*self).slice(ndarray::s![i,s]) * &(*rhs).slice(ndarray::s![s,j]);
+                    multiplied_elements.assign_to(result.slice_mut(ndarray::s![i,j]));
+                }
+            }
+        }
+
+        return EArray::<T,ndarray::Ix2>(result);
+    }
+}
