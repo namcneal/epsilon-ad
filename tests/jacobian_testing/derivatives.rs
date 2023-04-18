@@ -15,7 +15,7 @@ fn square(){
 	let xs = range(0,100).map(|x| x as f64 / dx);
 	let ys  : Vec<f64> = xs.clone().map(|x| f(x as f64)).collect();
 	let dys : Vec<f64> = xs.clone().map(|x| 2.0* x as f64).collect();
-	let eys : Vec<JacobianResult<f64,ndarray::Ix0>>= xs.clone().map(|x| jacobian(Ef, &ndarray::arr0(x as f64))).collect();
+	let eys : Vec<JacobianResult<f64,ndarray::Ix0>>= xs.clone().map(|x| jacobian(Ef, &ndarray::arr0(x as f64).lift())).collect();
 
 	for (i,y) in ys.iter().enumerate(){
 		let expected_value = *y;
@@ -45,7 +45,7 @@ fn _pow(){
 		let ys  : Vec<f64> = xs.clone().map(|x| f(x as f64,k)).collect();
 		let dys : Vec<f64> = xs.clone().map(|x| (k as f64) * pow(x as f64, k-1)).collect();
 		
-		let eys : Vec<JacobianResult<f64,ndarray::Ix0>>= xs.clone().map(|x| jacobian(|x| Ef(x,k), &ndarray::arr0(x as f64))).collect();
+		let eys : Vec<JacobianResult<f64,ndarray::Ix0>>= xs.clone().map(|x| jacobian(|x| Ef(x,k), &ndarray::arr0(x as f64).lift())).collect();
 
 		for (i,y) in ys.iter().enumerate(){
 			let x = xs.clone().collect::<Vec<f64>>()[i];

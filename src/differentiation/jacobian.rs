@@ -13,14 +13,13 @@ pub struct JacobianResult<T:Scalar,D:ndarray::Dimension>{
 }
 
 
-pub fn jacobian<'a, T,F,D1,D2>(f: F, x:&Array<T,D1>) -> JacobianResult<T,D2>
+pub fn jacobian<'a, T,F,D1,D2>(f: F, x:&EArray<T,D1>) -> JacobianResult<T,D2>
 where T  : Scalar+'a,
       D1 : ndarray::Dimension,
       D2 : ndarray::Dimension,
       F  : Fn(&EArray<T,D1>) -> EArray<T,D2>
 {
-    let mut x = x.lift();
-
+    let mut x = x.clone();
     let derivative_called : bool  = true;
     let derivative_id     : u64   = (&derivative_called as *const bool) as u64;
 
