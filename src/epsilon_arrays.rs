@@ -100,6 +100,10 @@ impl<T: Scalar> EVector<T>{
 
 
 impl<T: Scalar> EMatrix<T>{
+    pub fn t(&self) -> Self{
+        EArray::<T,ndarray::Ix2>(self.0.t().to_owned())
+    }
+
     pub fn mat_mul(&self, rhs:&Self) -> Self{
         let lhs_shape = (*self).shape();
         let rhs_shape = (*rhs).shape();
