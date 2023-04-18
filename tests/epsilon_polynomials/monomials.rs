@@ -1,9 +1,7 @@
 use epsilon_ad::prelude::*;
-use epsilon_ad::differentiation::lifting;
 
 use rand::prelude::*;
 use rand_distr::Normal;
-use rand::seq::IteratorRandom;
 
 #[derive(Debug, Clone)]
 pub (crate) struct EMonomial<T: Scalar, const D: usize>{
