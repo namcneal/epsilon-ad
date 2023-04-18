@@ -107,14 +107,15 @@ impl<T: Scalar> EMatrix<T>{
         assert!(lhs_shape[1]==rhs_shape[0], "{}", &mismatch_size_err);
 
         let mut result = Array::from_elem([lhs_shape[0], rhs_shape[1]], Dual::<T>::zero());
-        for i in 0..lhs_shape[0]{
-            for j in 0..rhs_shape[1]{
-                for s in 0..lhs_shape[1]{
-                    let multiplied_elements = &(*self).slice(ndarray::s![i,s]) * &(*rhs).slice(ndarray::s![s,j]);
-                    multiplied_elements.assign_to(result.slice_mut(ndarray::s![i,j]));
-                }
+        for i in 0..lhs_shape[0]{ for j in 0..rhs_shape[1]{
+
+            for s in 0..lhs_shape[1]{
+                let multiplied_elements = &(*self).slice(ndarray::s![i,s]) * &(*rhs).slice(ndarray::s![s,j]);
+                let add_multiplied_elements_to_sum = &result.slice_mut(ndarray::s![i,j]) + &multiplied_elements;
+                
+                add_multiplied_elements_to_sum.assign_to(result.slice_mut(ndarray::s![i,j]));
             }
-        }
+        }}
 
         return EArray::<T,ndarray::Ix2>(result);
     }
