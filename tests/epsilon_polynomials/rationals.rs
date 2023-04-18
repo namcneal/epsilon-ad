@@ -10,10 +10,10 @@ pub struct ERational<T: Scalar, const D: usize>{
 
 impl<T: Scalar, const D: usize> ERational<T,D>{
 	pub (crate) fn eval(&self, x:&EVector<T>) -> EReal<T>{
-		println!("vv that jacobian relies on the numerator {:?}\n", &self.numerator);
-		println!("and denominator {:?}\n", &self.denominator);
-		println!("evaluated at the input x={:?}\n", &x);
-		&self.numerator.eval(x).clone() / &self.denominator.eval(x).clone()
+
+		let result = &self.numerator.eval(x).clone() / &self.denominator.eval(x).clone();
+		println!("{:?}", &result);
+		return result;
 	}
 
 	pub (crate) fn random_normal(num_monomials:u64) -> ERational<T, D>{	
@@ -42,8 +42,7 @@ impl<T: Scalar, const D: usize> ERational<T,D>{
 	pub (crate) fn epsilon_gradient(&self, x:&ndarray::Array1<T>) -> ndarray::ArrayD<T>{
 		let result = jacobian(|x| self.eval(x), x);
 		
-		
-		println!("Jacobian: {:?}\n", result.jacobian);
+		println!("Jacobian: {:?}\n---------------------\n", result.jacobian);
 
 		result.jacobian.values()
 	}

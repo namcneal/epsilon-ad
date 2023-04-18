@@ -37,8 +37,8 @@ fn test_on_D_dim_rationals<const D: usize>(){
 					let mut distance = difference.map(|el| *el * *el).sum();
 					distance /= f64::from(D as f64);
 
-					let approx_zero = f64::from(1e-12);
-					let msg = format!("\n\nExpected: {}\nReceived: {}\nDifference:{}\n\n", &analytic_result, &epsilon_result, difference);
+					let approx_zero = f64::from(1e-16);
+					let msg = format!("\n\nExpected: {}\nReceived: {}\nDifference:{}\nDistance:{}\n\n", &analytic_result, &epsilon_result, difference,distance);
 					assert!(distance < approx_zero, "{}", &msg);
 				}
 			}

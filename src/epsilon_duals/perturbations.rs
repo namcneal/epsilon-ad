@@ -22,10 +22,10 @@ impl<T: Scalar> Debug for Perturbation<T>{
 		let mut representation : String = String::new();
 		for i in 0..self.products.len(){
 			representation.push_str(
-				&format!("{:?} ", self.coefficients[i])
+				&format!("({:?}", self.coefficients[i])
 			);
 			representation.push_str(
-				&format!("π_[i=1..{:?}]ϵ +", self.products[i].num_epsilons)
+				&format!("product of {:?} ϵs ) + ", self.products[i].num_epsilons)
 			);
 		}
 
@@ -63,7 +63,7 @@ impl<T: Scalar> Perturbation<T>{
 			}
 		}
 
-		let epsilon = 1e-16;
+		let epsilon = 0.0;
 		let mut combined_monomials = Vec::<NonEmptyEpsilonProduct>::new();
         let mut combined_coefficients = Vec::<T>::new();
 		for (unique_data, coefficients) in map.iter_mut(){
@@ -71,7 +71,7 @@ impl<T: Scalar> Perturbation<T>{
 				.fold(T::zero(), |acc,x| acc + *x);
 
 			let epsilon_product =NonEmptyEpsilonProduct { epsilons_within: unique_data.0,
-                                                                            				   num_epsilons:   unique_data.1};
+                                                                            	  num_epsilons:   unique_data.1};
 			if abs(summed_coefficient) > <T as From<f64>>::from(epsilon){
 				combined_monomials.push(epsilon_product);
                 combined_coefficients.push(summed_coefficient);

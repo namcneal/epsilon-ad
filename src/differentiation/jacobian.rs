@@ -19,8 +19,6 @@ where T  : Scalar+'a,
       D2 : ndarray::Dimension,
       F  : Fn(&EArray<T,D1>) -> EArray<T,D2>
 {
-    // let _jacobian : ArrayD<T>;
-
     let mut x = x.lift();
 
     let derivative_called : bool  = true;

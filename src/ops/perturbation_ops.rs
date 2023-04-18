@@ -111,7 +111,7 @@ impl<T: Scalar> Mul<T> for &Perturbation<T> {
         let mut new_coefficients = PerturbationData::<T>::new();
         for coeff in self.coefficients.iter(){
             new_coefficients.push(*coeff*rhs);
-        }T
+        }
 
         let new_coefficients = smallvec::SmallVec::from(
             self.coefficients
