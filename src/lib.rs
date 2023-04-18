@@ -15,6 +15,8 @@ pub mod prelude {
 	pub use crate::lifting::*;
 	pub use crate::lifting::Lift;
 	pub use crate::differentiation::jacobian::*;
+	pub use crate::differentiation::hessian::*;
+
 }
 
 
