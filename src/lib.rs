@@ -2,7 +2,6 @@
 #[macro_use]
 pub mod scalar;
 pub mod epsilon_duals;
-pub mod epsilon_arrays;
 pub mod ops;
 pub mod lifting;
 pub mod differentiation;
@@ -11,8 +10,7 @@ pub mod differentiation;
 pub mod prelude {
 	pub use crate::scalar::Scalar;
 	pub use crate::epsilon_duals::duals::*;
-	pub use crate::epsilon_arrays::arrays::*;
-	pub use crate::epsilon_arrays::standard_basis::*;
+	pub use crate::epsilon_duals::epsilon_arrays::*;
 	pub use crate::lifting::*;
 	pub use crate::lifting::Lift;
 	pub use crate::differentiation::jacobian::*;
