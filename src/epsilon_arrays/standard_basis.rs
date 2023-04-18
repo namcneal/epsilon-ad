@@ -43,21 +43,14 @@ impl<T:Scalar> StandardBasis<T>{
 			u.push(uk);
 		}
 
-        for basis_vec in u.iter_mut(){
+        let mut orthonormal_matrix: ndarray::Array2<Dual<T>> = ndarray::Array::from_elem(Dim([dimension,dimension]), Dual::<T>::zero());
+
+        for (i,basis_vec )in u.iter_mut().enumerate(){
             basis_vec.normalize();
+            basis_vec.assign_to(orthonormal_matrix.slice_mut(ndarray::s![i,..]));
         }
 
-
-        // let result : Vec<Array1<Perturbation<T>>> = u.iter()
-        //     .map(|dvec| dvec.0.mapv(|vi| vi.duals))
-        //     .collect();
-
-        let u_views : Vec<ArrayView1<Dual<T>>> = u.iter()
-            .map(|v| v.0.view())
-            .collect();
-
-        EArray::<T,ndarray::Ix2>(stack(Axis(1), u_views.as_slice()).unwrap())
-
+        return EArray::<T,ndarray::Ix2>(orthonormal_matrix)
 	}
 
     pub fn matrix(&self) -> EArray<T,ndarray::Ix2>{

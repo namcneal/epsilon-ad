@@ -9,6 +9,7 @@ pub struct EArray<T: Scalar, D:Dimension>(pub Array<Dual<T>, D>);
 pub type EReal<T>   = EArray<T,ndarray::Ix0>;
 pub type Ef64       = EReal<f64>;
 pub type EVector<T> = EArray<T, ndarray::Ix1>;
+pub type EMatrix<T> = EArray<T, ndarray::Ix2>;
 pub type EArrayD<T> = EArray<T,ndarray::IxDyn>;
 
 
