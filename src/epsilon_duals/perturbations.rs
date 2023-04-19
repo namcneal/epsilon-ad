@@ -2,7 +2,6 @@
 use crate::epsilon_duals::epsilons::*;
 use crate::scalar::Scalar;
 use smallvec::SmallVec;
-use num_traits::abs;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -14,7 +13,7 @@ pub (crate) type PerturbationData<T> = SmallVec<[T; SVNE]>;
 #[derive(Clone, PartialEq)]
 pub struct Perturbation<T: Scalar>{
     pub coefficients : PerturbationData<T> ,
-    pub products     : PerturbationData<NonEmptyEpsilonProduct>
+    pub (crate) products     : PerturbationData<NonEmptyEpsilonProduct>
 }
 
 impl<T: Scalar> Debug for Perturbation<T>{
@@ -25,11 +24,29 @@ impl<T: Scalar> Debug for Perturbation<T>{
 				&format!("({:?}", self.coefficients[i])
 			);
 			representation.push_str(
-				&format!("product of {:?} ϵs ) + ", self.products[i].num_epsilons)
+				&format!(" product of ϵs ) + ")
 			);
 		}
 
 		write!(f, "{}", &representation)
+	}
+}
+
+impl <T:Scalar> From<&[NonEmptyEpsilonProduct]> for Perturbation<T>{
+	fn from(slice_of_epsilons: &[NonEmptyEpsilonProduct]) -> Self {
+		Perturbation { 
+			coefficients: SmallVec::from([T::zero(); SVNE]), 
+				products: SmallVec::from(slice_of_epsilons)
+		}
+	}
+}
+
+impl <T:Scalar, const N: usize> From<&[NonEmptyEpsilonProduct; N]> for Perturbation<T>{
+	fn from(arr_of_epsilons: &[NonEmptyEpsilonProduct; N]) -> Self {
+		Perturbation { 
+			coefficients: SmallVec::from([T::zero(); SVNE]), 
+				products: SmallVec::from(arr_of_epsilons.as_slice())
+		}
 	}
 }
 
@@ -39,47 +56,41 @@ impl<T: Scalar> Perturbation<T>{
                            products    : PerturbationData::<NonEmptyEpsilonProduct>::new()}
     }
 
-    pub fn singleton_product(invocation_id:u64, direction:u64) -> Perturbation<T>{
+    pub fn singleton_product(depth:u16, direction:u16) -> Perturbation<T>{
         let mut perturbation = Perturbation::<T>::empty_perturbation();
         perturbation.coefficients.push(T::one());
-        perturbation.products.push(NonEmptyEpsilonProduct::singleton(invocation_id, direction));
+        perturbation.products.push(NonEmptyEpsilonProduct::singleton(depth, direction));
 
         return perturbation
     }
 
-    pub fn combine_like_monomials(coefficients:Vec<T>, monomials:Vec<NonEmptyEpsilonProduct>) -> Perturbation<T>{
-		// println!("{:?};\n{:?}\n\n", coefficients, monomials);
-        let mut map = HashMap::<(AggregateID,EpsilonCount), Vec<T>>::new();
-		for (i, monomial) in monomials.iter().enumerate(){
+    pub (crate) fn combine_like_monomials(coefficients:Vec<&T>, products:Vec<&NonEmptyEpsilonProduct>) -> Perturbation<T>{
+        let mut coefficients_grouped_by_like_products = HashMap::<AggregatedEpsilons, Vec<T>>::new();
+		for (i, epsilon_product) in products.iter().enumerate(){
             
-            let next_monomial_to_add_deconstructed = (monomial.epsilons_within, monomial.num_epsilons);
-			match map.get_mut(&next_monomial_to_add_deconstructed){
+			match coefficients_grouped_by_like_products.get_mut(&epsilon_product.0){
 				None => {
-					map.insert(next_monomial_to_add_deconstructed, vec![coefficients[i]]);
+					coefficients_grouped_by_like_products.insert(epsilon_product.0, vec![*coefficients[i]]);
 				},
 				Some(vector) => {
-					vector.push(coefficients[i]);
+					vector.push(*coefficients[i]);
 				}
 			}
 		}
 
-		let epsilon = 0.0;
-		let mut combined_monomials = Vec::<NonEmptyEpsilonProduct>::new();
-        let mut combined_coefficients = Vec::<T>::new();
-		for (unique_data, coefficients) in map.iter_mut(){
-			let summed_coefficient : T = (*coefficients).iter()
+		let mut sum_over_like_products  = Vec::<NonEmptyEpsilonProduct>::new();
+        let mut sum_over_coefficients_of_like_products = Vec::<T>::new();
+		for (unique_product, coefficients) in coefficients_grouped_by_like_products.iter_mut(){
+			let summed_coefficient : T = (*coefficients)
+				.iter()
 				.fold(T::zero(), |acc,x| acc + *x);
 
-			let epsilon_product =NonEmptyEpsilonProduct { epsilons_within: unique_data.0,
-                                                                            	  num_epsilons:   unique_data.1};
-			if abs(summed_coefficient) > <T as From<f64>>::from(epsilon){
-				combined_monomials.push(epsilon_product);
-                combined_coefficients.push(summed_coefficient);
-			}
-				
+			let epsilon_product = NonEmptyEpsilonProduct(*unique_product);
+			sum_over_like_products.push(epsilon_product);
+			sum_over_coefficients_of_like_products.push(summed_coefficient);
 		}
 
-		Perturbation{coefficients : smallvec::SmallVec::from(combined_coefficients), 
-					 products     : smallvec::SmallVec::from(combined_monomials)}
+		Perturbation{coefficients : smallvec::SmallVec::from(sum_over_coefficients_of_like_products), 
+					 products     : smallvec::SmallVec::from(sum_over_like_products)}
 	}
 }
