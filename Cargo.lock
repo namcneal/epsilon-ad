@@ -185,6 +185,7 @@ dependencies = [
  "array-init",
  "astro-float",
  "duplicate",
+ "itertools",
  "ndarray",
  "num",
  "num-bigfloat",

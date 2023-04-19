@@ -21,7 +21,7 @@ impl EpsilonID{
 
 pub (crate) type AggregatedEpsilons = u32;
 
-#[derive(Debug, Copy,Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub (crate) struct NonEmptyEpsilonProduct(pub (crate) AggregatedEpsilons);
 pub (crate) type Epsilon = NonEmptyEpsilonProduct;
 
@@ -36,12 +36,8 @@ impl NonEmptyEpsilonProduct {
     }
 }   
 
-impl PartialEq for NonEmptyEpsilonProduct{
-    fn eq(&self, other: &Self) -> bool {
-        (self.0 ^ other.0) == 0
-    }
-}
 
+#[derive(Debug)]
 pub struct EpsilonProduct(pub (crate) Option<NonEmptyEpsilonProduct>);
 
 impl From<NonEmptyEpsilonProduct> for EpsilonProduct{

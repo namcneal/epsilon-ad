@@ -3,7 +3,6 @@
 pub mod scalar;
 pub mod epsilon_duals;
 pub mod epsilon_arrays;
-pub mod ops;
 pub mod lifting;
 pub mod differentiation;
 
