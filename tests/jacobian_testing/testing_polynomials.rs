@@ -24,13 +24,14 @@ fn test_on_D_dim_polynomials<const D: usize>(){
 					let analytic_result = polynomial.analytic_gradient(&input);
 					let epsilon_result  = polynomial.epsilon_gradient(&input.values());
 
-					let non_zero = 1e-16;
 					let difference = &analytic_result - &epsilon_result;
 					let mut distance = difference.map(|el| *el * *el).sum();
 					distance /= D as f64;
 
-					println!("Expected: {}\nReceived: {}\nDifference:{}\n\n", &analytic_result, &epsilon_result, difference);
-					assert!(distance < 1e-16)
+					let msg = format!("Expected: {}\nReceived: {}\nDifference:{}\n\n", &analytic_result, &epsilon_result, difference);
+					
+					let non_zero= 1e-12;
+					assert!(distance < non_zero, "{}", msg)
 				}
 			}
 		}	

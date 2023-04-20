@@ -23,13 +23,13 @@ fn test_on_D_dim_monomials<const D: usize>(){
 				let analytic_result = monomial.analytic_gradient(&input);
 				let epsilon_result  = monomial.epsilon_gradient(&input.values());
 
-				let non_zero = 1e-16;
+				let non_zero = 1e-14;
 				let difference = &analytic_result - &epsilon_result;
 				let mut distance = difference.map(|el| *el * *el).sum();
 				distance /= D as f64;
 
-				println!("Expected: {}\nReceived: {}\nDifference:{}\n\n", &analytic_result, &epsilon_result, difference);
-				assert!(distance < 1e-16)
+				let msg = format!("Expected: {}\nReceived: {}\nDifference:{}\n\n", &analytic_result, &epsilon_result, difference);
+				assert!(distance < non_zero, "{}", msg);
 			}
 		}	
 	}

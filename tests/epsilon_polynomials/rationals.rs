@@ -12,7 +12,7 @@ impl<T: Scalar, const D: usize> ERational<T,D>{
 	pub (crate) fn eval(&self, x:&EVector<T>) -> EReal<T>{
 
 		let result = &self.numerator.eval(x).clone() / &self.denominator.eval(x).clone();
-		println!("{:?}", &result);
+		// println!("Result of ERational evluation: {:?}", &result);
 		return result;
 	}
 
@@ -42,7 +42,7 @@ impl<T: Scalar, const D: usize> ERational<T,D>{
 	pub (crate) fn epsilon_gradient(&self, x:&ndarray::Array1<T>) -> ndarray::ArrayD<T>{
 		let result = jacobian(|x| self.eval(x), &x);
 		
-		println!("Jacobian: {:?}\n---------------------\n", result.jacobian);
+		// println!("Jacobian: {:?}\n---------------------\n", result.jacobian);
 
 		result.jacobian
 	}
