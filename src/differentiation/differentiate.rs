@@ -12,9 +12,9 @@ use ndarray::s;
 use smallvec::SmallVec;
 
 #[derive(Debug)]
-struct DerivativeOrder(EpsilonFieldType);
+struct DerivativeOrder(usize);
 impl DerivativeOrder{
-	fn new(i:EpsilonFieldType) -> Self{
+	fn new(i:usize) -> Self{
 		assert!(i > 0);
 		DerivativeOrder(i)
 	}
@@ -23,7 +23,7 @@ impl DerivativeOrder{
 		(self.0 - 1) as usize
 	}
 
-	fn for_epsilon(&self) -> EpsilonFieldType{
+	fn for_epsilon(&self) -> usize{
 		self.0
 	}
 }
@@ -42,8 +42,8 @@ impl EpsilonBasis{
 	fn new(input_dim:usize, order:DerivativeOrder) -> Self{
 		let mut basis_epsilons = SmallVec::<[Epsilon; ASSUMED_MAXIMUM_NUM_DERIVATIVES]>::new();
 		
-		for dir in 1..=input_dim{
-			basis_epsilons.push( Epsilon::singleton(order.for_epsilon(), dir as EpsilonFieldType) );
+		for direction in 0..input_dim{
+			basis_epsilons.push(NonEmptyEpsilonProduct::basis_element(input_dim, direction, order.for_epsilon()));
 		}
 		
 		EpsilonBasis(basis_epsilons)
@@ -75,12 +75,12 @@ impl std::fmt::Debug for DerivativeTensorIndex{
 	}
 }
 
-pub struct EpsilonExtractionMap(HashMap<NonEmptyEpsilonProduct, Vec<DerivativeTensorIndex>>);
+pub struct EpsilonExtractionMap(HashMap<EpsilonProductRepresentation, Vec<DerivativeTensorIndex>>);
 
 impl std::fmt::Debug for EpsilonExtractionMap{
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		for (epsilon, vec) in self.0.iter(){
-			let result = write!(f, "ε({:?}): {:?}\n", epsilon.0, vec);
+		for (product, vec) in self.0.iter(){
+			let result = write!(f, "ε({:?}): {:?}\n", product, vec);
 			match result{
 				Ok(_) => (),
 				Err(something) => return Err(something)
@@ -125,7 +125,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 	pub fn new(input:ndarray::Array1<T>) -> Self{
 		let dim = input.len();
 		let epsilon_basis_complex = array_init::array_init(|idx| {
-			EpsilonBasis::new(dim, DerivativeOrder::new(idx as EpsilonFieldType + 1))
+			EpsilonBasis::new(dim, DerivativeOrder::new(idx + 1))
 		});
 		
 		println!("The epsilon basises used for this derivative: \n{:?}", epsilon_basis_complex);
@@ -156,11 +156,11 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 						let all_indices_the_product_goes_to = derivative_combination.into_iter()
 							.permutations(order)
 							.map(|permuted_index| {
-								DerivativeTensorIndex{ order : DerivativeOrder::new(order as EpsilonFieldType), index: permuted_index}
+								DerivativeTensorIndex{ order : DerivativeOrder::new(order), index: permuted_index}
 							})
 							.collect();
 
-						map.0.insert(epsilon_product, all_indices_the_product_goes_to);
+						map.0.insert(epsilon_product.id(), all_indices_the_product_goes_to);
 					}
 				}
 			}
@@ -246,7 +246,7 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 			// println!("{:?}\n", &current_output_dual_element);
 
 			for (i,epsilon_product) in perturbation.products.iter().enumerate(){
-				match self.each_order_extraction_map.0.get(epsilon_product){
+				match self.each_order_extraction_map.0.get(&epsilon_product.id()){
 					None => {
 						panic!("This epsilon has escaped the table that maps it to its output tensor indices. This should not happen.")
 					},

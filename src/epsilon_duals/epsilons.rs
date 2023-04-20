@@ -1,62 +1,60 @@
 use std::ops::{Mul,Deref,DerefMut};
 
 
-pub (crate) type EpsilonFieldType  = u8;
-pub (crate) type EpsilonStoredType = u16;
+const MAX_DIMENSION        : usize = 16;
+const MAX_DERIVATIVE_ORDER : usize = 8;
+type EpsilonOrder        =  usize;
+struct EpsilonBasisElement{
+    bit_representation : u16
+}
+
+impl EpsilonBasisElement{
+    fn new(dimension:usize, direction: usize, order: usize) -> Result<EpsilonBasisElement, ()> {
+        // let order_not_supported_msg = "Sorry, derivatives of order greater than 8 are not currently supported.";
+        // let order_received_msg = format!("Expected an order <= 16. Received {}", order);
+        assert!(dimension < MAX_DIMENSION);
+        assert!(direction < MAX_DIMENSION);
+        assert!(order > 1); 
+        assert!(order < MAX_DERIVATIVE_ORDER ); 
+
+        let mut representation : u16 = 1;
+        representation <<= direction;
+
+        Ok(EpsilonBasisElement{bit_representation : representation})
+    }
+}
+
+pub (crate) type EpsilonProductRepresentation = u128;
 
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct NonEmptyEpsilonProduct(pub (crate) EpsilonStoredType);
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub struct NonEmptyEpsilonProduct{
+    pub (crate) aggregated_order_contents  : u8,
+    pub (crate) product_bit_representation : EpsilonProductRepresentation
+}
 pub (crate) type Epsilon = NonEmptyEpsilonProduct;
 
 impl NonEmptyEpsilonProduct {
-    pub fn singleton(order:EpsilonFieldType, direction:EpsilonFieldType) -> NonEmptyEpsilonProduct{
-        assert!(order > 0); assert!(direction > 0);
-
-        // let unique_pairing = Self::szuduki_pairing(order, direction);
-        // println!("Ord.: {}  Dir.: {}   Pair: {}", order, direction, unique_pairing);
-        NonEmptyEpsilonProduct(Self::combine_fields_for_storage(order, direction))
+    pub (crate) fn id(&self) -> EpsilonProductRepresentation{
+        self.product_bit_representation
     }
 
-    pub fn combine_fields_for_storage(order:EpsilonFieldType, direction:EpsilonFieldType) -> EpsilonStoredType{
-        // Stack the two into a single 32 bit number
-        let shift = 8*std::mem::size_of::<EpsilonFieldType>();
-        order as EpsilonStoredType | ((direction as EpsilonStoredType) << shift)
-    }
-
-    // https://codepen.io/sachmata/post/elegant-pairing
-    fn szuduki_pairing(order:EpsilonFieldType, direction:EpsilonFieldType) -> EpsilonStoredType{
-        let x = order     as EpsilonStoredType;
-        let y = direction as EpsilonStoredType;
-        if x >=y {
-            x*x + x + y
-        } else{
-            y*y + x
+    pub fn basis_element(dimension:usize, direction:usize, order:usize) -> NonEmptyEpsilonProduct{
+        let epsilon = EpsilonBasisElement::new(dimension,direction,order);
+        match epsilon{
+            Err(error) =>  panic!("Could not create epsilon basis element"),
+            Ok(element) => {
+                let mut full_representation_with_other_orders = element.bit_representation as u128;
+                full_representation_with_other_orders <<= MAX_DIMENSION * (order - 1);
+                NonEmptyEpsilonProduct{
+                    aggregated_order_contents : order as u8, 
+                    product_bit_representation : full_representation_with_other_orders
+                                
+                }
+            }
         }
     }
 }   
-
-impl std::fmt::Debug for NonEmptyEpsilonProduct{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ε({})", self.0)
-    }
-}
-
-impl Deref for NonEmptyEpsilonProduct{
-    type Target = EpsilonStoredType;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for NonEmptyEpsilonProduct{
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-
-
 
 
 #[derive(Debug)]
