@@ -170,14 +170,17 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 	where T: Scalar,
 		D: Dimension
 {
-	
+	fn output_shape_adapted_from_ndarray(&self) -> &[usize] {
+		match self.output.shape(){
+			[] => [1].as_slice(),
+			sh => sh
+		}
+	}
+
 	fn derivative_shape(&self, input_shape: usize, output_shape:&[usize], derivative_order:usize) -> Vec<usize>{
 		assert!(derivative_order > 0);
 		let derivative_indices = std::iter::repeat(input_shape).take(derivative_order);
-		let mut final_shape = match output_shape{
-			[] => vec![1],
-			sh => sh.to_vec()
-		};
+		let mut final_shape = output_shape.to_vec();
 		final_shape.extend(derivative_indices);
 		
 		println!("{:?}", final_shape);
@@ -187,7 +190,7 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 	fn empty_derivative_tensors(&self) -> Vec::<ndarray::ArrayD<T>>{		
 		let mut tensors = Vec::<ndarray::ArrayD<T>>::new();
 		for order in 1..=K{
-			let derivative_shape = self.derivative_shape(self.input_dimension, self.output.0.shape(), order);
+			let derivative_shape = self.derivative_shape(self.input_dimension, self.output_shape_adapted_from_ndarray(), order);
 			let derivative_tensor = ndarray::Array::from_elem(derivative_shape, T::zero());
 			tensors.push(derivative_tensor);
 		}
