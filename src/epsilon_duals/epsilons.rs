@@ -17,8 +17,8 @@ use std::ops::{Mul,Deref,DerefMut};
 
 // pub (crate) type AggregatedEpsilons = u32;
 
-pub (crate) type EpsilonFieldType = u8;
-pub (crate) type EpsilonStoredType    = u16;
+pub (crate) type EpsilonFieldType  = u8;
+pub (crate) type EpsilonStoredType = u16;
 
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
