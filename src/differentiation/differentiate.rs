@@ -134,8 +134,10 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 		let mut map : EpsilonExtractionMap = EpsilonExtractionMap(HashMap::new());
 
 		for order in 1..=K{
-			let combinations = (0..self.dimension).combinations(order);
-					
+			// Having replacements represented will include the diagonal, as we need terms like d^2/dx1 dx1,
+			// which has a combination of indices [1,1] <- and this needs replacement to be constructed
+			let combinations = (0..self.dimension).combinations_with_replacement(order);
+
 			for derivative_combination in combinations{
 				let corresponding_epsilon_product = derivative_combination.iter()
 					.enumerate()
@@ -144,7 +146,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 					.reduce(|acc,item| acc * &item)
 					.unwrap();
 
-				// println!("{:?}\t{:?}", derivative_combination,corresponding_epsilon_product.0.unwrap());
+				println!("{:?}\t{:?}", derivative_combination,corresponding_epsilon_product.0.unwrap());
 
 				match corresponding_epsilon_product.0{
 					None => panic!("This should never be none. Something in the epsilon product went wrong."),
