@@ -227,9 +227,18 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 
 							let tensor_derivative_index_as_slice = index2slice(&tensor_index.index);
 							all_indices_of_tensor.extend(tensor_derivative_index_as_slice);
-							
-							let mut derivative_element = derivatives[tensor_index.order.as_index()].slice_each_axis_mut(|axis_descr| all_indices_of_tensor[axis_descr.axis.0]);
-							println!("{:?}", &ndarray::arr0(perturbation.coefficients[i]));
+
+							println!("All indices of tensor: {:?}", all_indices_of_tensor);
+
+
+							println!("{:?}", derivatives[tensor_index.order.as_index()]);
+							let mut derivative_element = derivatives[tensor_index.order.as_index()].slice_each_axis_mut(|axis_descr|{
+								print!("{:?} ", all_indices_of_tensor[axis_descr.axis.0]);
+								all_indices_of_tensor[axis_descr.axis.0]
+							});
+
+							println!("\nCoefficient: {:?}", &ndarray::arr0(perturbation.coefficients[i]));
+							println!("Derivative element: {:?}\n\n", &derivative_element);
 							derivative_element += &ndarray::arr0(perturbation.coefficients[i]);
 						}
 					}
