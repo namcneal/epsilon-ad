@@ -1,4 +1,3 @@
-// mod tagged_evaluation;
-// pub mod jacobian;
-// pub mod hessian;
 pub mod differentiate;
+pub mod jacobian;
+// pub mod hessian;

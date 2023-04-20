@@ -1,4 +1,7 @@
+use std::marker::PhantomData;
+
 use crate::prelude::*;
+use crate::Scalar;
 use crate::differentiation::differentiate::*;
 
 // use crate::epsilon_duals::epsilons::{EpsilonID, NonEmptyEpsilonProduct};
@@ -7,29 +10,24 @@ use crate::differentiation::differentiate::*;
 // use ndarray::{IxDyn, Array, ArrayD, Array2, s, Dimension};
 // use num::Zero;
 
-// #[derive(Debug,Clone)]
-// pub struct JacobianResult<T:Scalar,D:ndarray::Dimension>{
-//     pub value   :    Array<T,D>,
-//     pub jacobian:    EArray<T,ndarray::IxDyn>
-// }
+#[derive(Debug,Clone)]
+pub struct JacobianResult<T:Scalar,D:ndarray::Dimension>{
+    pub value   :    ndarray::Array<T,D>,
+    pub jacobian:    ndarray::Array<T,ndarray::IxDyn>,
+}
 
 
-pub fn jacobian<'a, T,F,D1,D2>(f: F, x:&ndarray::Array1<T>) -> JacobianResult<T,D2>
-where T  : Scalar
-//       D1 : ndarray::Dimension,
-//       D2 : ndarray::Dimension,
-//       F  : Fn(&EArray<T,D1>) -> EArray<T,D2>
-{
-//     let input_data = EvaluationInput::<T,D1>::from(x.clone());
-//     let evaluated_with_epsilons = input_data.tagged_eval(f);
-//     // let tags_extracted = evaluated_with_epsilons.extractr
+pub fn jacobian<T,F,D>(f: F, x:&ndarray::Array1<T>) -> JacobianResult<T, D>
+where T : Scalar,
+      D : ndarray::Dimension,
+      F : Fn(&EVector<T>) -> EArray<T,D>
+{   
+    const order : usize = 1;
+    let derivative_scheduled = DerivativeInvocation::<T,order>::new(x.clone());
+    let called_with_epsilon_result = derivative_scheduled.call(f);
 
-//     // let result_principal_values = result.clone().map(|el| el.value);
-//     // let result_infinimal_values = extract_derivative(x.0.len(), &result, derivative_id);
-    
-//     // JacobianResult{value:    result_principal_values, 
-//     //                jacobian: result_infinimal_values}
+    let mut value_and_jacobian = called_with_epsilon_result.extract_all_derivatives();
+    assert!(value_and_jacobian.1.len() == 1);
 
-//     todo!()
-
+    JacobianResult::<T,D>{value: value_and_jacobian.0, jacobian: value_and_jacobian.1.remove(0)}
 }

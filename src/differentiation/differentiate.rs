@@ -9,18 +9,25 @@ use itertools::{Itertools, iterate};
 use std::collections::HashMap;
 use ndarray::s;
 
+use smallvec::SmallVec;
+
 
 // use std::iter::zip;
 // use ndarray::{IxDyn, Array, ArrayD, Array2, s, Dimension};
 // use num::Zero;
 // use std::rc::Rc;
 
+const ASSUMED_MAXIMUM_NUM_DERIVATIVES : usize = 16;
 
 #[derive(Clone, Debug)]
-pub struct EpsilonBasis<const D: usize>([Epsilon; D]);
-impl<const D: usize> EpsilonBasis<D>{
+pub struct EpsilonBasis(SmallVec::<[Epsilon; ASSUMED_MAXIMUM_NUM_DERIVATIVES]>);
+impl EpsilonBasis{
 	fn new(depth:u16) -> Self{
-		let basis_epsilons : [Epsilon; D] = array_init::array_init(|i| Epsilon::singleton(depth, i as u16 + 1));
+		let mut basis_epsilons = SmallVec::<[Epsilon; ASSUMED_MAXIMUM_NUM_DERIVATIVES]>::new();
+		for i in 0..depth{
+			basis_epsilons[i as usize] = Epsilon::singleton(depth, i as u16 + 1);
+		}
+
 		EpsilonBasis(basis_epsilons)
 	}
 
@@ -29,11 +36,12 @@ impl<const D: usize> EpsilonBasis<D>{
 	}
 }
 
-pub struct DerivativeInvocation<T,const D: usize, const K: usize> 
+pub struct DerivativeInvocation<T, const K: usize> 
 	where  T: Scalar,
 { 
-	input : EVector<T>,
-	pub epsilons : [EpsilonBasis<D>; K]
+	dimension : usize,
+	input     : EVector<T>,
+	pub epsilons : [EpsilonBasis; K]
 }
 
 type Index = Vec<usize>;
@@ -52,25 +60,41 @@ struct DerivativeTensorIndex{
 type EpsilonExtractionMap = HashMap<NonEmptyEpsilonProduct, Vec<DerivativeTensorIndex>>;
 #
 [derive(Debug)]
-pub struct DerivativeResult<T,const D1: usize, D2, const K: usize> 
+pub struct DerivativeResult<T, D2, const K: usize> 
 	where  T: Scalar,
 		   D2: ndarray::Dimension
 { 
+	input_dimension     : usize,
 	output              : EArray<T,D2>,
 	each_depth_extraction_map : EpsilonExtractionMap
 }
 
 
 
-impl<T, const D: usize,const K: usize> DerivativeInvocation<T,D,K>
+impl<T, const K: usize> DerivativeInvocation<T,K>
     where T: Scalar
 {
-	fn input_shape(&self)      ->   usize  { D }
+
+	pub fn eval<'a,F,D>(self, f: F) -> DerivativeResult<T,D,K>
+		where D: ndarray::Dimension,
+			  F: Fn(&EVector<T>) -> EArray<T,D>
+	{
+		self.tagged_eval(f)
+	}
+
+	pub fn call<'a,F,D>(self, f: F) -> DerivativeResult<T,D,K>
+	where D: ndarray::Dimension,
+		  F: Fn(&EVector<T>) -> EArray<T,D>
+{
+	self.tagged_eval(f)
+}
+
+	fn input_shape(&self)      -> &[usize] { self.input.0.shape() }
 	fn derivative_order(&self) ->   usize  { K+1 }
 
-	pub fn new(input:EVector<T>) -> Self{
-		let epsilon_basis_complex = array_init::array_init(|depth| EpsilonBasis::<D>::new(depth as u16));
-		DerivativeInvocation{input: input, epsilons:epsilon_basis_complex}
+	pub fn new(input:ndarray::Array1<T>) -> Self{
+		let epsilon_basis_complex = array_init::array_init(|depth| EpsilonBasis::new(depth as u16));
+		DerivativeInvocation{dimension: input.len(), input: input.lift(), epsilons:epsilon_basis_complex}
 	}
 
 	fn epsilon_products_to_extract(&self) -> EpsilonExtractionMap{
@@ -78,7 +102,7 @@ impl<T, const D: usize,const K: usize> DerivativeInvocation<T,D,K>
 
 		for j in 0..K{
 			let derivative_order = j+1;
-			let combinations = (0..D).combinations(derivative_order);
+			let combinations = (0..self.dimension).combinations(derivative_order);
 					
 			for derivative_combination in combinations{
 				// println!("{:?}", derivative_combination);
@@ -106,9 +130,9 @@ impl<T, const D: usize,const K: usize> DerivativeInvocation<T,D,K>
 		return map;
 	}
 
-    pub fn tagged_eval<'a,F,D2>(self, f: F) -> DerivativeResult<T,D,D2,K>
-		where D2: ndarray::Dimension,
-			   F: Fn(&EVector<T>) -> EArray<T,D2>
+    pub fn tagged_eval<'a,F,D>(self, f: F) -> DerivativeResult<T,D,K>
+		where D: ndarray::Dimension,
+			  F: Fn(&EVector<T>) -> EArray<T,D>
 	{
 
 		let mut x = self.input.clone();
@@ -121,19 +145,21 @@ impl<T, const D: usize,const K: usize> DerivativeInvocation<T,D,K>
             
         }
 
-		DerivativeResult{output              : f(&x),
-						 each_depth_extraction_map : self.epsilon_products_to_extract()
+		DerivativeResult{ input_dimension     : x.len(),
+						  output              : f(&x),
+						  each_depth_extraction_map : self.epsilon_products_to_extract()
 		}
 	}
 }
 
-impl<T,const D: usize, D2,const K: usize> DerivativeResult<T,D,D2,K>
-	where  T: Scalar,
-		  D2: Dimension
+impl<T, D, const K: usize> DerivativeResult<T,D,K>
+	where T: Scalar,
+		D: Dimension
 {
-	fn input_shape(&self)      ->   usize  { D }
-	fn derivative_order(&self) ->   usize  { K+1 }
+	
+	fn input_shape(&self)      ->   usize  { self.input_dimension }
 	fn output_shape(&self)     -> &[usize] { self.output.0.shape() }
+	fn derivative_order(&self) ->   usize  { K+1 }
 
 	fn derivative_shape(&self, input_shape: usize, output_shape:&[usize], derivative_order:usize) -> Vec<usize>{
 		assert!(derivative_order > 0);
@@ -158,7 +184,7 @@ impl<T,const D: usize, D2,const K: usize> DerivativeResult<T,D,D2,K>
 		return tensors;
 	}
 
-	pub fn extract_all_derivatives(&self) -> Vec<ndarray::ArrayD<T>>{
+	pub fn extract_all_derivatives(&self) -> (ndarray::Array<T,D>, Vec<ndarray::ArrayD<T>>){
 		let mut derivatives = self.empty_derivative_tensors();
 
 		let all_output_indices = self.output_shape().iter().map(|axis_size| 0..*axis_size);
@@ -194,7 +220,7 @@ impl<T,const D: usize, D2,const K: usize> DerivativeResult<T,D,D2,K>
 			}
 		}
 
-		return derivatives
+		return (self.output.values(), derivatives)
 	}
 	
 

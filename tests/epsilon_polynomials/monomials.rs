@@ -64,7 +64,7 @@ impl<T: Scalar, const D: usize> EMonomial<T,D>{
 	}
 
 	pub (crate) fn epsilon_gradient(&self, x:&ndarray::Array1<T>) -> ndarray::ArrayD<T>{
-		let result = jacobian(|x| self.eval(x), &x.lift());
-		result.jacobian.values()
+		let result = jacobian(|x| self.eval(x), x);
+		result.jacobian
 	}
 }
