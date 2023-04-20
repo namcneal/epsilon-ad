@@ -2,7 +2,7 @@ use array_init::array_init;
 use ndarray::Dimension;
 
 use crate::prelude::*;
-use crate::epsilon_duals::epsilons::{Epsilon, NonEmptyEpsilonProduct, EpsilonProduct};
+use crate::epsilon_duals::epsilons::*;
 use crate::epsilon_duals::perturbations::Perturbation;
 
 use itertools::{Itertools, iterate};
@@ -12,9 +12,9 @@ use ndarray::s;
 use smallvec::SmallVec;
 
 #[derive(Debug)]
-struct DerivativeOrder(u16);
+struct DerivativeOrder(EpsilonFieldType);
 impl DerivativeOrder{
-	fn new(i:u16) -> Self{
+	fn new(i:EpsilonFieldType) -> Self{
 		assert!(i > 0);
 		DerivativeOrder(i)
 	}
@@ -23,7 +23,7 @@ impl DerivativeOrder{
 		(self.0 - 1) as usize
 	}
 
-	fn for_epsilon(&self) -> u16{
+	fn for_epsilon(&self) -> EpsilonFieldType{
 		self.0
 	}
 }
@@ -43,7 +43,7 @@ impl EpsilonBasis{
 		let mut basis_epsilons = SmallVec::<[Epsilon; ASSUMED_MAXIMUM_NUM_DERIVATIVES]>::new();
 		
 		for dir in 1..=input_dim{
-			basis_epsilons.push( Epsilon::singleton(order.for_epsilon(), dir as u16) );
+			basis_epsilons.push( Epsilon::singleton(order.for_epsilon(), dir as EpsilonFieldType) );
 		}
 		
 		EpsilonBasis(basis_epsilons)
@@ -124,7 +124,9 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 
 	pub fn new(input:ndarray::Array1<T>) -> Self{
 		let dim = input.len();
-		let epsilon_basis_complex = array_init::array_init(|idx| EpsilonBasis::new(dim, DerivativeOrder::new(idx as u16 + 1)));
+		let epsilon_basis_complex = array_init::array_init(|idx| {
+			EpsilonBasis::new(dim, DerivativeOrder::new(idx as EpsilonFieldType + 1))
+		});
 		
 		println!("The epsilon basises used for this derivative: \n{:?}", epsilon_basis_complex);
 		DerivativeInvocation{dimension: input.len(), input: input.lift(), epsilons:epsilon_basis_complex}
@@ -153,7 +155,9 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 					Some(epsilon_product) => {
 						let all_indices_the_product_goes_to = derivative_combination.into_iter()
 							.permutations(order)
-							.map(|permuted_index| DerivativeTensorIndex{ order : DerivativeOrder::new(order as u16), index: permuted_index})
+							.map(|permuted_index| {
+								DerivativeTensorIndex{ order : DerivativeOrder::new(order as EpsilonFieldType), index: permuted_index}
+							})
 							.collect();
 
 						map.0.insert(epsilon_product, all_indices_the_product_goes_to);

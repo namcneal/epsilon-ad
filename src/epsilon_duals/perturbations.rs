@@ -24,7 +24,7 @@ impl<T: Scalar> Debug for Perturbation<T>{
 				&format!("({:?}", self.coefficients[i])
 			);
 			representation.push_str(
-				&format!(" product of εs (id={}) ) + ", self.products[i].0)
+				&format!(" product of εs (id={:?}) ) + ", self.products[i].0)
 			);
 		}
 		write!(f, "{}", &representation)
@@ -55,7 +55,7 @@ impl<T: Scalar> Perturbation<T>{
                            products    : PerturbationData::<NonEmptyEpsilonProduct>::new()}
     }
 
-    pub fn singleton_product(depth:u16, direction:u16) -> Perturbation<T>{
+    pub fn singleton_product(depth:EpsilonFieldType, direction:EpsilonFieldType) -> Perturbation<T>{
         let mut perturbation = Perturbation::<T>::empty_perturbation();
         perturbation.coefficients.push(T::one());
         perturbation.products.push(NonEmptyEpsilonProduct::singleton(depth, direction));
@@ -64,12 +64,12 @@ impl<T: Scalar> Perturbation<T>{
     }
 
     pub (crate) fn combine_like_monomials(coefficients:Vec<&T>, products:Vec<&NonEmptyEpsilonProduct>) -> Perturbation<T>{
-        let mut coefficients_grouped_by_like_products = HashMap::<AggregatedEpsilons, Vec<T>>::new();
+        let mut coefficients_grouped_by_like_products = HashMap::<NonEmptyEpsilonProduct, Vec<T>>::new();
 		for (i, epsilon_product) in products.iter().enumerate(){
             
-			match coefficients_grouped_by_like_products.get_mut(&epsilon_product.0){
+			match coefficients_grouped_by_like_products.get_mut(&epsilon_product){
 				None => {
-					coefficients_grouped_by_like_products.insert(epsilon_product.0, vec![*coefficients[i]]);
+					coefficients_grouped_by_like_products.insert(**epsilon_product, vec![*coefficients[i]]);
 				},
 				Some(vector) => {
 					vector.push(*coefficients[i]);
@@ -84,7 +84,7 @@ impl<T: Scalar> Perturbation<T>{
 				.iter()
 				.fold(T::zero(), |acc,x| acc + *x);
 
-			let epsilon_product = NonEmptyEpsilonProduct(*unique_product);
+			let epsilon_product = NonEmptyEpsilonProduct(unique_product.0);
 			sum_over_like_products.push(epsilon_product);
 			sum_over_coefficients_of_like_products.push(summed_coefficient);
 		}
