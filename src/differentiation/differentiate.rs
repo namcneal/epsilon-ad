@@ -171,23 +171,23 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 		D: Dimension
 {
 	
-	fn input_shape(&self)      ->   usize  { self.input_dimension }
-	fn output_shape(&self)     -> &[usize] { self.output.0.shape() }
-	fn derivative_order(&self) ->   usize  { K+1 }
-
 	fn derivative_shape(&self, input_shape: usize, output_shape:&[usize], derivative_order:usize) -> Vec<usize>{
 		assert!(derivative_order > 0);
 		let derivative_indices = std::iter::repeat(input_shape).take(derivative_order);
-		let mut final_shape = output_shape.to_vec();
+		let mut final_shape = match output_shape{
+			[] => vec![1],
+			sh => sh.to_vec()
+		};
 		final_shape.extend(derivative_indices);
 		
+		println!("{:?}", final_shape);
 		return final_shape
 	}
 
 	fn empty_derivative_tensors(&self) -> Vec::<ndarray::ArrayD<T>>{		
 		let mut tensors = Vec::<ndarray::ArrayD<T>>::new();
 		for order in 1..=K{
-			let derivative_shape = self.derivative_shape(self.input_shape(), self.output_shape(), order);
+			let derivative_shape = self.derivative_shape(self.input_dimension, self.output.0.shape(), order);
 			let derivative_tensor = ndarray::Array::from_elem(derivative_shape, T::zero());
 			tensors.push(derivative_tensor);
 		}
@@ -199,9 +199,9 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 		let mut derivatives = self.empty_derivative_tensors();
 		
 		let all_output_indices : Vec<std::ops::Range<usize>> = {
-			match self.output_shape(){
+			match self.output.shape(){
 				[] => vec![0..1],
-				_ => self.output_shape().iter().map(|axis_size| 0..*axis_size).collect()
+				_ => self.output.shape().iter().map(|axis_size| 0..*axis_size).collect()
 			}
 		};
 		
@@ -227,13 +227,10 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 
 							let tensor_derivative_index_as_slice = index2slice(&tensor_index.index);
 							all_indices_of_tensor.extend(tensor_derivative_index_as_slice);
-
-							println!("All indices of tensor: {:?}", all_indices_of_tensor);
-
-
-							println!("{:?}", derivatives[tensor_index.order.as_index()]);
+							
+							// println!("{:?}", derivatives[tensor_index.order.as_index()].shape());
 							let mut derivative_element = derivatives[tensor_index.order.as_index()].slice_each_axis_mut(|axis_descr|{
-								print!("{:?} ", all_indices_of_tensor[axis_descr.axis.0]);
+								// print!("{:?} ", all_indices_of_tensor[axis_descr.axis.0]);
 								all_indices_of_tensor[axis_descr.axis.0]
 							});
 
