@@ -64,14 +64,33 @@ fn index2slice(index:&Vec<usize>) -> Vec<ndarray::Slice>{
 		ndarray::Slice::new(*idx as isize, Some(*idx as isize + 1), 1)
 	).collect()
 }
-
-#[derive(Debug)]
-struct DerivativeTensorIndex{
+pub struct DerivativeTensorIndex{
 	order : DerivativeOrder, 
 	index : Index
 }
 
-type EpsilonExtractionMap = HashMap<NonEmptyEpsilonProduct, Vec<DerivativeTensorIndex>>;
+impl std::fmt::Debug for DerivativeTensorIndex{
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{:?}-order derivative for index {:?}", self.order.0, self.index)
+	}
+}
+
+pub struct EpsilonExtractionMap(HashMap<NonEmptyEpsilonProduct, Vec<DerivativeTensorIndex>>);
+
+impl std::fmt::Debug for EpsilonExtractionMap{
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		for (epsilon, vec) in self.0.iter(){
+			let result = write!(f, "ε({:?}): {:?}\n", epsilon.0, vec);
+			match result{
+				Ok(_) => (),
+				Err(something) => return Err(something)
+			}
+		}
+
+		Ok(())
+	}
+}
+
 #
 [derive(Debug)]
 pub struct DerivativeResult<T, D2, const K: usize> 
@@ -79,8 +98,8 @@ pub struct DerivativeResult<T, D2, const K: usize>
 		   D2: ndarray::Dimension
 { 
 	input_dimension     : usize,
-	output              : EArray<T,D2>,
-	each_order_extraction_map : EpsilonExtractionMap
+	pub output              : EArray<T,D2>,
+	pub each_order_extraction_map : EpsilonExtractionMap
 }
 
 
@@ -103,29 +122,29 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 		self.tagged_eval(f)
 	}	
 
-	fn input_shape(&self)      -> &[usize] { self.input.0.shape() }
-	fn derivative_order(&self) ->   usize  { K+1 }
-
 	pub fn new(input:ndarray::Array1<T>) -> Self{
 		let dim = input.len();
 		let epsilon_basis_complex = array_init::array_init(|idx| EpsilonBasis::new(dim, DerivativeOrder::new(idx as u16 + 1)));
+		
+		println!("{:?}", epsilon_basis_complex);
 		DerivativeInvocation{dimension: input.len(), input: input.lift(), epsilons:epsilon_basis_complex}
 	}
 
 	fn epsilon_products_to_extract(&self) -> EpsilonExtractionMap{
-		let mut map : EpsilonExtractionMap = HashMap::new();
+		let mut map : EpsilonExtractionMap = EpsilonExtractionMap(HashMap::new());
 
 		for order in 1..=K{
 			let combinations = (0..self.dimension).combinations(order);
 					
 			for derivative_combination in combinations{
-				// println!("{:?}", derivative_combination);
 				let corresponding_epsilon_product = derivative_combination.iter()
 					.enumerate()
 					.map(|(idx,dir)| self.epsilons[idx].0[*dir])
 					.map(|nonempty| EpsilonProduct::from(nonempty))
 					.reduce(|acc,item| acc * &item)
 					.unwrap();
+
+				// println!("{:?}\t{:?}", derivative_combination,corresponding_epsilon_product.0.unwrap());
 
 				match corresponding_epsilon_product.0{
 					None => panic!("This should never be none. Something in the epsilon product went wrong."),
@@ -135,7 +154,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 							.map(|permuted_index| DerivativeTensorIndex{ order : DerivativeOrder::new(order as u16), index: permuted_index})
 							.collect();
 
-						map.insert(epsilon_product, all_indices_the_product_goes_to);
+						map.0.insert(epsilon_product, all_indices_the_product_goes_to);
 					}
 				}
 			}
@@ -183,7 +202,6 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 		let mut final_shape = output_shape.to_vec();
 		final_shape.extend(derivative_indices);
 		
-		println!("{:?}", final_shape);
 		return final_shape
 	}
 
@@ -200,6 +218,7 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 
 	pub fn extract_all_derivatives(&self) -> (ndarray::Array<T,D>, Vec<ndarray::ArrayD<T>>){
 		let mut derivatives = self.empty_derivative_tensors();
+		// println!("\n{:?}\n", self.output);
 		
 		let all_output_indices : Vec<std::ops::Range<usize>> = {
 			match self.output.shape(){
@@ -218,9 +237,13 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 
 			assert!(current_output_dual_element.len() == 1);
 			let perturbation = &current_output_dual_element.first().unwrap().duals;
+			// println!("{:?}\n", &current_output_dual_element);
+
 			for (i,epsilon_product) in perturbation.products.iter().enumerate(){
-				match self.each_order_extraction_map.get(epsilon_product){
-					None => panic!("This epsilon has escaped the table that maps it to its output tensor indices. This should not happen."),
+				match self.each_order_extraction_map.0.get(epsilon_product){
+					None => {
+						panic!("This epsilon has escaped the table that maps it to its output tensor indices. This should not happen.")
+					},
 					
 					Some(tensor_indices) => {
 

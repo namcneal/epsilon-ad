@@ -30,8 +30,10 @@ fn main(){
     let x0 = ndarray::arr1(&[3.0, 5.0,7.0]);
     let derivative_call = DerivativeInvocation::<f64,order>::new(x0);
 
-    let output = derivative_call.tagged_eval(&Ef);
+    let result = derivative_call.tagged_eval(&Ef);
     
-    println!("{:?}", output.extract_all_derivatives());
-    // todo!()
+    println!("\n{:?}\n", result.output);
+    println!("{:?}", result.each_order_extraction_map);
+
+    todo!()
 }
