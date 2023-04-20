@@ -1,22 +1,6 @@
 use std::ops::{Mul,Deref,DerefMut};
 
 
-// type DerivativeDepth     = u16;
-// type DerivativeDirection = u16;
-
-// #[derive(Debug)]
-// pub struct EpsilonID(pub DerivativeDepth, pub DerivativeDirection);
-// pub (crate) type ReducedEpsilonID = u32;
-
-// impl EpsilonID{
-//     pub fn reduce(self:&Self) -> ReducedEpsilonID{
-//         // Stack the two into a single 32 bit number
-//         self.0 as u32 | ((self.1 as u32) << 16)
-//     }
-// }
-
-// pub (crate) type AggregatedEpsilons = u32;
-
 pub (crate) type EpsilonFieldType  = u8;
 pub (crate) type EpsilonStoredType = u16;
 
@@ -29,9 +13,15 @@ impl NonEmptyEpsilonProduct {
     pub fn singleton(order:EpsilonFieldType, direction:EpsilonFieldType) -> NonEmptyEpsilonProduct{
         assert!(order > 0); assert!(direction > 0);
 
-        let unique_pairing = Self::szuduki_pairing(order, direction);
+        // let unique_pairing = Self::szuduki_pairing(order, direction);
         // println!("Ord.: {}  Dir.: {}   Pair: {}", order, direction, unique_pairing);
-        NonEmptyEpsilonProduct(unique_pairing)
+        NonEmptyEpsilonProduct(Self::combine_fields_for_storage(order, direction))
+    }
+
+    pub fn combine_fields_for_storage(order:EpsilonFieldType, direction:EpsilonFieldType) -> EpsilonStoredType{
+        // Stack the two into a single 32 bit number
+        let shift = 8*std::mem::size_of::<EpsilonFieldType>();
+        order as EpsilonStoredType | ((direction as EpsilonStoredType) << shift)
     }
 
     // https://codepen.io/sachmata/post/elegant-pairing
