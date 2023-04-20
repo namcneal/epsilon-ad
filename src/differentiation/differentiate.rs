@@ -126,7 +126,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 		let dim = input.len();
 		let epsilon_basis_complex = array_init::array_init(|idx| EpsilonBasis::new(dim, DerivativeOrder::new(idx as u16 + 1)));
 		
-		println!("{:?}", epsilon_basis_complex);
+		println!("The epsilon basises used for this derivative: \n{:?}", epsilon_basis_complex);
 		DerivativeInvocation{dimension: input.len(), input: input.lift(), epsilons:epsilon_basis_complex}
 	}
 

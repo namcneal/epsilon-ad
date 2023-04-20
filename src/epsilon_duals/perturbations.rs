@@ -24,10 +24,9 @@ impl<T: Scalar> Debug for Perturbation<T>{
 				&format!("({:?}", self.coefficients[i])
 			);
 			representation.push_str(
-				&format!(" product of ϵs({}) ) + ", self.products[i].0)
+				&format!(" product of εs (id={}) ) + ", self.products[i].0)
 			);
 		}
-
 		write!(f, "{}", &representation)
 	}
 }
