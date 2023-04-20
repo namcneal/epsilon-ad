@@ -5,15 +5,13 @@ impl Mul for &NonEmptyEpsilonProduct{
     type Output = EpsilonProduct;
 
     fn mul(self:Self, rhs:Self) -> Self::Output{
-        let lhs_rhs_same_depth_and_direction =  *self == *rhs;
+        let aggregated_epsilons = **self ^ **rhs;
+        println!("LHS: {}   RHS: {}   Agg: {}", **self, **rhs, aggregated_epsilons);
+        let lhs_rhs_contain_same_order_and_direction =  aggregated_epsilons == 0;
 
-        match lhs_rhs_same_depth_and_direction{
+        match lhs_rhs_contain_same_order_and_direction{
             true => EpsilonProduct(None),
-            _ => {
-                let combined_orders = self[0] ^ rhs[0];
-                let combined_directions = self[1] ^ rhs[1];
-                EpsilonProduct::from(NonEmptyEpsilonProduct([combined_orders, combined_directions]))
-            }
+            _    => EpsilonProduct::from(NonEmptyEpsilonProduct(aggregated_epsilons))
         }
     }
 }

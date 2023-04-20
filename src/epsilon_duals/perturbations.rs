@@ -21,10 +21,10 @@ impl<T: Scalar> Debug for Perturbation<T>{
 		let mut representation : String = String::new();
 		for i in 0..self.products.len(){
 			representation.push_str(
-				&format!("({:?}", self.coefficients[i])
+				&format!("{:?}", self.coefficients[i])
 			);
 			representation.push_str(
-				&format!(" product of εs (id={:?}) ) + ", self.products[i].0)
+				&format!("{:?} + ", self.products[i])
 			);
 		}
 		write!(f, "{}", &representation)
