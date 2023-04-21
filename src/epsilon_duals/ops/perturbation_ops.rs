@@ -22,23 +22,6 @@ impl<T: Scalar> Add for &Perturbation<T>{
     }
 }
 
-impl<T: Scalar> AddAssign for Perturbation<T>{
-    // https://stackoverflow.com/questions/64226562/check-if-vec-contains-all-elements-from-another-vec
-    fn add_assign(&mut self, rhs: Self){
-        // Iterate through the RHS to find matches in the LHS,
-        // We want to see if a term's combination of individual epsilons is the same
-        for i in 0..self.coefficients.len(){
-            for (j, product) in rhs.products.iter().enumerate(){
-                if self.products[i] == *product{
-                    self.coefficients[i] += rhs.coefficients[j].clone();
-                } else{
-                    self.coefficients.push(rhs.coefficients[i].clone());
-                    self.products.push(rhs.products[i].clone());
-                }
-            }
-        }
-    }
-}
 
 /*
             Subtraction 

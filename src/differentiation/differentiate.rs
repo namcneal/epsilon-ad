@@ -177,10 +177,12 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
         for (direction, xi) in x.0.iter_mut().enumerate(){
 			for epsilon_order in self.epsilons.iter(){
 				let perturbation = Perturbation::<T>::from(&[epsilon_order.0[direction]]);
-				(*xi).duals = perturbation;
+				(*xi).duals = &(*xi).duals + &perturbation;
 			}
             
         }
+
+		println!("Perturbed input: {:?}", &x);
 
 		DerivativeResult{ input_dimension     : x.len(),
 						  output              : f(&x),

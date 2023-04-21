@@ -42,10 +42,7 @@ impl <T:Scalar> From<&[NonEmptyEpsilonProduct]> for Perturbation<T>{
 
 impl <T:Scalar, const N: usize> From<&[NonEmptyEpsilonProduct; N]> for Perturbation<T>{
 	fn from(arr_of_epsilons: &[NonEmptyEpsilonProduct; N]) -> Self {
-		Perturbation { 
-			coefficients: SmallVec::from([T::one(); SVNE]), 
-				products: SmallVec::from(arr_of_epsilons.as_slice())
-		}
+		<Perturbation<T> as From<&[NonEmptyEpsilonProduct]>>::from(arr_of_epsilons.as_slice())
 	}
 }
 

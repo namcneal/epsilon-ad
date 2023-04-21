@@ -48,7 +48,7 @@ impl<T: Scalar> AddAssign for Dual<T>{
 
     fn add_assign(self: &mut Self, rhs: Dual<T>){
         self.value += rhs.value;
-        self.duals += rhs.duals;
+        self.duals = &self.duals + &rhs.duals;
     }
 }
 
