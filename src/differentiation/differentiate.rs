@@ -128,7 +128,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 			EpsilonBasis::new(dim, DerivativeOrder::new(idx + 1))
 		});
 		
-		println!("The epsilon basises used for this derivative: \n{:?}", epsilon_basis_complex);
+		// println!("The epsilon basises used for this derivative: \n{:?}", epsilon_basis_complex);
 		DerivativeInvocation{dimension: input.len(), input: input.lift(), epsilons:epsilon_basis_complex}
 	}
 
@@ -146,7 +146,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 					.reduce(|acc,item| acc * &item)
 					.unwrap();
 
-				println!("{:?}\t{:?}", derivative_combination,corresponding_epsilon_product.0.unwrap());
+				// println!("{:?}\t{:?}", derivative_combination,corresponding_epsilon_product.0.unwrap());
 
 				match corresponding_epsilon_product.0{
 					None => panic!("This should never be none. Something in the epsilon product went wrong."),
@@ -248,7 +248,7 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 			for (i,epsilon_product) in perturbation.products.iter().enumerate(){
 				match self.each_order_extraction_map.0.get(&epsilon_product.id()){
 					None => {
-						panic!("This epsilon has escaped the table that maps it to its output tensor indices. This should not happen.")
+						// panic!("This epsilon has escaped the table that maps it to its output tensor indices. This should not happen.")
 					},
 					
 					Some(tensor_indices) => {
@@ -266,8 +266,8 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 								all_indices_of_tensor[axis_descr.axis.0]
 							});
 
-							println!("\nCoefficient: {:?}", &ndarray::arr0(perturbation.coefficients[i]));
-							println!("Derivative element: {:?}\n\n", &derivative_element);
+							// println!("\nCoefficient: {:?}", &ndarray::arr0(perturbation.coefficients[i]));
+							// println!("Derivative element: {:?}\n\n", &derivative_element);
 							derivative_element += &ndarray::arr0(perturbation.coefficients[i]);
 						}
 					}

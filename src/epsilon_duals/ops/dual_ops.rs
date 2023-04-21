@@ -95,7 +95,8 @@ impl<T: Scalar> Mul for &Dual<T>{
 
     fn mul(self:Self, rhs: Self) -> Self::Output {
         Dual::<T>{value: self.value*rhs.value, 
-                  duals: &(&self.duals*rhs.value) + &(&rhs.duals*self.value)}
+                  duals: &(&(&self.duals*rhs.value) + &(&rhs.duals*self.value)) + &(&self.duals*&rhs.duals)
+                }
     }
 }
 

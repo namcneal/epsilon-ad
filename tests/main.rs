@@ -32,8 +32,8 @@ fn main(){
 
     let result = derivative_call.tagged_eval(&Ef);
     
-    println!("\n{:?}\n", result.output);
-    println!("{:?}", result.each_order_extraction_map);
+    println!("\n{:?}\n", result.extract_all_derivatives());
+    // println!("{:?}", result.each_order_extraction_map);
 
     todo!()
 }

@@ -33,8 +33,12 @@ impl<T: Scalar> Debug for Perturbation<T>{
 
 impl <T:Scalar> From<&[NonEmptyEpsilonProduct]> for Perturbation<T>{
 	fn from(slice_of_epsilons: &[NonEmptyEpsilonProduct]) -> Self {
+		let coefficients : Vec<T> = std::iter::repeat(T::one())
+			.take(slice_of_epsilons.len())
+			.collect();
+
 		Perturbation { 
-			coefficients: SmallVec::from([T::zero(); SVNE]), 
+			coefficients: SmallVec::from(coefficients), 
 				products: SmallVec::from(slice_of_epsilons)
 		}
 	}
@@ -52,13 +56,6 @@ impl<T: Scalar> Perturbation<T>{
                            products    : PerturbationData::<NonEmptyEpsilonProduct>::new()}
     }
 
-    // pub fn singleton_product(depth:EpsilonFieldType, direction:EpsilonFieldType) -> Perturbation<T>{
-    //     let mut perturbation = Perturbation::<T>::empty_perturbation();
-    //     perturbation.coefficients.push(T::one());
-    //     perturbation.products.push(NonEmptyEpsilonProduct::singleton(depth, direction));
-
-    //     return perturbation
-    // }
 
     pub (crate) fn combine_like_monomials(coefficients:Vec<&T>, products:Vec<&NonEmptyEpsilonProduct>) -> Perturbation<T>{
         let mut coefficients_grouped_by_like_products = HashMap::<NonEmptyEpsilonProduct, Vec<T>>::new();

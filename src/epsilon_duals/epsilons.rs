@@ -46,7 +46,7 @@ impl NonEmptyEpsilonProduct {
 
     fn first_order_place_contains_mutiple_epsilons_of_same_order(bit_repr:EpsilonProductRepresentation) -> bool{
         let bits_in_first_place = bit_repr as RepresentationAsInt; // truncate to first 
-        bits_in_first_place.count_ones() > 1
+        bits_in_first_place.count_ones() >= 2
     }
 
     fn kth_order_place_contains_muiltiple_epsilons_of_same_order(&self, k:usize) -> bool{
