@@ -152,13 +152,26 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 				match corresponding_epsilon_product.0{
 					None => panic!("This should never be none. Something in the epsilon product went wrong."),
 					Some(epsilon_product) => {
-						let all_indices_the_product_goes_to = derivative_combination.into_iter()
-							.permutations(order)
-							.map(|permuted_index| {
-								DerivativeTensorIndex{ order : DerivativeOrder::new(order), index: permuted_index}
-							})
-							.collect();
+						let mut all_indices_the_product_goes_to = Vec::<DerivativeTensorIndex>::new();
+						
+							match derivative_combination.iter().unique().collect::<Vec<&usize>>().len(){
+								1 => {
+									// println!("{:?}", derivative_combination);
+									all_indices_the_product_goes_to.push(
+										DerivativeTensorIndex{ order : DerivativeOrder::new(order), index: derivative_combination}
+									)
+								}
 
+								_ => {
+									for derivative_permutation in derivative_combination.into_iter()
+																										.permutations(order)
+																										.map(|permuted_index| DerivativeTensorIndex{ order : DerivativeOrder::new(order), index: permuted_index}){
+										all_indices_the_product_goes_to.push(derivative_permutation);
+									}
+								}
+							}
+							
+					
 						map.0.insert(epsilon_product.id(), all_indices_the_product_goes_to);
 					}
 				}

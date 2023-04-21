@@ -21,8 +21,8 @@ fn test_on_D_dim_polynomials<const D: usize>(){
 				for N in 1..=max_num_monomials{
 					let polynomial = EPolynomial::<f64,D>::random_normal(N as u64, i as u64);
 					
-					let analytic_result = polynomial.analytic_gradient(&input);
-					let epsilon_result  = polynomial.epsilon_gradient(&input.values());
+					let analytic_result = polynomial.analytic_hessian(&input);
+					let epsilon_result  = polynomial.epsilon_hessian(&input.values());
 
 					let difference = &analytic_result - &epsilon_result;
 					let mut distance = difference.map(|el| *el * *el).sum();

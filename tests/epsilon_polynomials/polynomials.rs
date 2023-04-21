@@ -38,10 +38,35 @@ impl<T: Scalar, const D: usize> EPolynomial<T,D>{
 
 		return gradient;
 	}
+	
+	pub (crate) fn analytic_hessian(&self, x:&EVector<T>) -> ndarray::Array2<T>{
+		let mut hessian = ndarray::Array2::from_elem([D,D], T::zero());
+		for i in 0..D{ for j in 0..D{
+			hessian[[i,j]] = self.0.iter()
+							  .map(|mono| {
+									let pder_i = mono.analytic_partial_derivative(i);
+									let pder_ij = pder_i.analytic_partial_derivative(j);
+									pder_ij
+							  })
+							  .map(|pder_ij| pder_ij.eval(x).values())
+							  .map(|pder_arr| pder_arr[ndarray::Dim(())])
+							  .reduce(|acc,item| acc + item)
+							  .unwrap();
+		}}
+
+		return hessian;
+	}
+
+
 
 	pub (crate) fn epsilon_gradient(&self, x:&ndarray::Array1<T>) -> ndarray::ArrayD<T>{
 		let result = jacobian(|x| self.eval(x), x);
 		result.jacobian
+	}
+
+	pub (crate) fn epsilon_hessian(&self, x:&ndarray::Array1<T>) -> ndarray::ArrayD<T>{
+		let result = hessian(|x| self.eval(x), x);
+		result.hessian
 	}
 }
 
