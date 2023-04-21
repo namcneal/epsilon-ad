@@ -143,6 +143,8 @@ impl<T: Scalar> Div for &Dual<T>{
     type Output = Dual<T>;
 
     fn div(self:Self, rhs: Self) -> Self::Output {
+        assert!(false, "TODO: Check to see if this should also be changed to reflect the change in multiplication.");
+
         Dual::<T>{value: self.value/rhs.value, 
                   duals: (&(&self.duals * rhs.value) - &(&rhs.duals * self.value)) / pow(rhs.value,2)}
     }
