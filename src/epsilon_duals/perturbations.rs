@@ -64,12 +64,12 @@ impl<T: Scalar> Perturbation<T>{
     // }
 
     pub (crate) fn combine_like_monomials(coefficients:Vec<&T>, products:Vec<&NonEmptyEpsilonProduct>) -> Perturbation<T>{
-        let mut coefficients_grouped_by_like_products = HashMap::<EpsilonProductRepresentation, Vec<T>>::new();
+        let mut coefficients_grouped_by_like_products = HashMap::<NonEmptyEpsilonProduct, Vec<T>>::new();
 		for (i, epsilon_product) in products.iter().enumerate(){
             
-			match coefficients_grouped_by_like_products.get_mut(&epsilon_product.id()){
+			match coefficients_grouped_by_like_products.get_mut(&epsilon_product){
 				None => {
-					coefficients_grouped_by_like_products.insert(epsilon_product.id(), vec![*coefficients[i]]);
+					coefficients_grouped_by_like_products.insert(**epsilon_product, vec![*coefficients[i]]);
 				},
 				Some(vector) => {
 					vector.push(*coefficients[i]);

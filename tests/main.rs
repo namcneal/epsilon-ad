@@ -1,4 +1,4 @@
-// mod epsilon_polynomials;
+mod epsilon_polynomials;
 
 // mod jacobian_testing;
 
@@ -25,9 +25,9 @@ use ndarray::{s};
 
 #[test]
 fn main(){
-    const dim : usize = 3;
+    const dim : usize = 2;
     const order : usize = 2;
-    let x0 = ndarray::arr1(&[3.0, 5.0,7.0]);
+    let x0 = ndarray::arr1(&[3.0, 5.0]);
     let derivative_call = DerivativeInvocation::<f64,order>::new(x0);
 
     let result = derivative_call.tagged_eval(&Ef);
