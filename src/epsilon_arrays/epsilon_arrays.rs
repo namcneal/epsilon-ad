@@ -67,6 +67,12 @@ impl<T: Scalar> From<&Array1<T>> for EVector<T>{
     }
 }
 
+impl<T: Scalar> From<&Array1<Dual<T>>> for EVector<T>{
+	fn from(s:&Array1<Dual<T>>) -> EVector<T>{
+        Self::from(s.as_slice().unwrap())
+    }
+}
+
 impl<T: Scalar> EVector<T>{
     pub fn from_dual_slice(s:&[Dual<T>]) -> EVector<T>{
         EArray::<T,ndarray::Ix1>(arr1(s))

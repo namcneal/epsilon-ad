@@ -2,6 +2,8 @@ mod epsilon_polynomials;
 
 mod jacobian_testing;
 
+mod hessian_testing;
+
 mod chatgpt;
 
 // mod higher_order_derivatives;

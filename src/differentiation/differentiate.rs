@@ -129,7 +129,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
 			EpsilonBasis::new(dim, DerivativeOrder::new(idx + 1))
 		});
 		
-		// println!("The epsilon basises used for this derivative: \n{:?}", epsilon_basis_complex);
+		// println!("\nThe epsilon basises used for this derivative: \n{:?}", epsilon_basis_complex);
 		DerivativeInvocation{dimension: input.len(), input: input.lift(), epsilons:epsilon_basis_complex}
 	}
 
@@ -183,7 +183,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
             
         }
 
-		// println!("Perturbed input: {:?}", &x);
+		// println!("\nPerturbed input: {:?}", &x);
 
 		DerivativeResult{ input_dimension     : x.len(),
 						  output              : f(&x),
@@ -244,7 +244,6 @@ impl<T, D, const K: usize> DerivativeResult<T,D,K>
 
 			assert!(current_output_dual_element.len() == 1);
 			let perturbation = &current_output_dual_element.first().unwrap().duals;
-			// println!("{:?}\n", &current_output_dual_element);
 
 			for (i,epsilon_product) in perturbation.products.iter().enumerate(){
 				match self.each_order_extraction_map.0.get(&epsilon_product.id()){

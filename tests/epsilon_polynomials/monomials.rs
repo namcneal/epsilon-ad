@@ -57,14 +57,34 @@ impl<T: Scalar, const D: usize> EMonomial<T,D>{
 		let mut gradient = ndarray::Array1::from_elem([D], T::zero());
 		for i in 0..D{
 			let partial_derivative = self.analytic_partial_derivative(i);
-			gradient[i] = partial_derivative.eval(x).values()[ndarray::Dim(())]
+			gradient[i] = partial_derivative.eval(x).values()[ndarray::Dim(())];
 		}		
 
 		return gradient;
 	}
 
+	pub (crate) fn analytic_hessian(&self, x:&EVector<T>) -> ndarray::Array2<T>{
+		let mut hessian = ndarray::Array2::from_elem([D,D], T::zero());
+		for i in 0..D{
+			let partial_derivative_i = self.analytic_partial_derivative(i);
+
+			for j in 0..D{
+				let partial_derivative_ij = partial_derivative_i.analytic_partial_derivative(j);
+
+				hessian[[i,j]] = partial_derivative_ij.eval(x).values()[ndarray::Dim(())];
+			}
+		}		
+
+		return hessian;
+	}
+
 	pub (crate) fn epsilon_gradient(&self, x:&ndarray::Array1<T>) -> ndarray::ArrayD<T>{
 		let result = jacobian(|x| self.eval(x), x);
 		result.jacobian
+	}
+
+	pub (crate) fn epsilon_hessian(&self, x:&ndarray::Array1<T>) -> ndarray::ArrayD<T>{
+		let result = hessian(|x| self.eval(x), x);
+		result.hessian
 	}
 }
