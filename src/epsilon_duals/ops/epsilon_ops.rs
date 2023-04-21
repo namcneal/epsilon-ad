@@ -7,7 +7,7 @@ impl Mul for &NonEmptyEpsilonProduct{
     type Output = EpsilonProduct;
 
     fn mul(self:Self, rhs:Self) -> Self::Output{
-        println!("\n{:?}, {:?}", self, rhs);
+        // println!("\n{:?}, {:?}", self, rhs);
         let new_product_repr = self.bits() | rhs.bits();
 
         let final_product : EpsilonProduct;
@@ -24,7 +24,7 @@ impl Mul for &NonEmptyEpsilonProduct{
             }
         }
 
-        println!("{:?}\n", final_product);
+        // println!("{:?}\n", final_product);
         return final_product
 
     }

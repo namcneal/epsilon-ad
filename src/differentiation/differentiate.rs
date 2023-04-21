@@ -182,7 +182,7 @@ impl<T, const K: usize> DerivativeInvocation<T,K>
             
         }
 
-		println!("Perturbed input: {:?}", &x);
+		// println!("Perturbed input: {:?}", &x);
 
 		DerivativeResult{ input_dimension     : x.len(),
 						  output              : f(&x),

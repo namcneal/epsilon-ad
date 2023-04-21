@@ -11,6 +11,7 @@ smallvec = "*"
 num = "*"
 itertools = "*"
 ndarray = "*"
+ndarray-linalg = "*"
 num-traits = "*"
 overload = "*"
 
@@ -23,3 +24,6 @@ astro-float = "0.6.7"
 
 rand = "*"
 rand_distr = "*"
+
+# Chatgpt
+approx = "*"

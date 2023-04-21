@@ -1,6 +1,8 @@
 mod epsilon_polynomials;
 
-// mod jacobian_testing;
+mod jacobian_testing;
+
+mod chatgpt;
 
 // mod higher_order_derivatives;
 
@@ -35,5 +37,5 @@ fn main(){
     println!("\n{:?}\n", result.extract_all_derivatives());
     // println!("{:?}", result.each_order_extraction_map);
 
-    todo!()
+    // todo!()
 }
