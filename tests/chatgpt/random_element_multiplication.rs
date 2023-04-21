@@ -9,7 +9,7 @@ fn create_rational_function<S: epsilon_ad::Scalar + Copy>(seed: u64, array1: Arr
     let mut numerator = S::zero();
     let mut denominator = S::one();
     for i in 0..n {
-        let coeff = <S as From<f64>>::from(rng.gen()); // generate a random coefficient
+        let coeff = S::from(rng.gen::<f64>()).unwrap(); // generate a random coefficient
         numerator = numerator + coeff * array1[[i]];
         denominator = denominator * (S::one() + array1[[i]]);
     }
@@ -22,7 +22,7 @@ fn epsilon_create_rational_function<S: epsilon_ad::Scalar + Copy>(seed: u64, arr
     let mut numerator = Dual::<S>::from(S::zero());
     let mut denominator = Dual::<S>::from(S::one());
     for i in 0..n {
-        let coeff = <S as From<f64>>::from(rng.gen()); 
+        let coeff = S::from(rng.gen::<f64>()).unwrap(); 
         let coeff = Dual::<S>::from(coeff); // generate a random coefficient
         numerator = numerator + coeff * array1[[i]].clone();
         denominator = denominator * (Dual::from(S::one()) + array1[[i]].clone());
@@ -37,13 +37,13 @@ fn compute_jacobian<S: epsilon_ad::Scalar>(seed: u64, array1: ArrayView1<S>) -> 
     let n = array1.len();
     let mut jacobian = Array2::<S>::zeros((1, n));
     for i in 0..n {
-        let h = <S as From<f64>>::from(1e-8); // step size for numerical differentiation
+        let h = S::from(1e-8).unwrap(); // step size for numerical differentiation
         let mut x = array1.to_owned();
         x[i] = x[i] + h;
         let f_plus_h = create_rational_function(seed, (&x).into()); // evaluate the function at x + h
-        x[i] = x[i] - <S as From<f64>>::from(2.0) * h;
+        x[i] = x[i] - S::from(2.0).unwrap() * h;
         let f_minus_h = create_rational_function(seed, (&x).into()); // evaluate the function at x - h
-        jacobian[[0, i]] = (f_plus_h - f_minus_h) / (<S as From<f64>>::from(2.0) * h); // compute the partial derivative using numerical differentiation
+        jacobian[[0, i]] = (f_plus_h - f_minus_h) / (S::from(2.0).unwrap() * h); // compute the partial derivative using numerical differentiation
     }
     jacobian
 }

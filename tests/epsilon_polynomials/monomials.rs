@@ -22,7 +22,7 @@ impl<T: Scalar, const D: usize> EMonomial<T,D>{
 		let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
 		
 		let normal = Normal::new(0.0, 1.0).unwrap();
-		let coefficient= <T as From<f64>>::from(normal.sample(&mut rng));
+		let coefficient= T::from(normal.sample(&mut rng)).unwrap();
 
 		const MAX_VARIABLE_POWER : u32 = 15;
 		let mut exponents : [u32; D] = [0; D];
@@ -45,7 +45,7 @@ impl<T: Scalar, const D: usize> EMonomial<T,D>{
 			derivative_coefficient = T::zero();
 			derivative_exponents   = [0; D];
 		} else {
-			derivative_coefficient *= <T as From<f64>>::from(self.exponents[direction] as f64);
+			derivative_coefficient *= T::from(self.exponents[direction] as f64).unwrap();
 			derivative_exponents[direction] -= 1;
 		}
 

@@ -46,7 +46,7 @@ impl<T: Scalar> Dual<T>{
     pub fn sqrt(&self) -> Self{
         let mut derived_perturbations = self.duals.clone();
         for c in derived_perturbations.coefficients.iter_mut(){
-            *c = <T as From<f64>>::from(0.5) / c.sqrt();
+            *c = T::from(0.5).unwrap() / c.sqrt();
         }
 
         Dual::<T>{value: self.value.sqrt(), 

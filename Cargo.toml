@@ -24,6 +24,3 @@ astro-float = "0.6.7"
 
 rand = "*"
 rand_distr = "*"
-
-# Chatgpt
-approx = "*"

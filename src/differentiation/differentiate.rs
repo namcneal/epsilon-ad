@@ -10,6 +10,7 @@ use std::collections::HashMap;
 use ndarray::s;
 
 use smallvec::SmallVec;
+use ndarray::Array;
 
 #[derive(Debug)]
 struct DerivativeOrder(usize);

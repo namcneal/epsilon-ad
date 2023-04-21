@@ -5,10 +5,9 @@ use core::fmt::Debug;
 
 
 pub trait Scalar : Debug + Clone + Copy + 'static + 
-                   Float + Signed  + Zero + One + 
+                   Num + Float + PartialOrd + Neg<Output = Self> +
                    AddAssign + SubAssign + MulAssign + DivAssign +
                    std::iter::Sum + std::iter::Product +
-                   From<f64>
                   {}
 
 // pub trait Scalar: Num {}
