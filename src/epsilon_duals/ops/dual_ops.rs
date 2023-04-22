@@ -158,17 +158,15 @@ impl<T: Scalar> Div for &Dual<T>{
         let taylor_series_argument = &rhs.duals / -rhs.value; 
         
         let mut current_product = taylor_series_argument.clone();
-        let mut taylor_series = taylor_series_argument.clone();
+        let mut taylor_series = Perturbation::<T>::empty_perturbation();
         while (&current_product).products.len() > 0{
-            current_product = &current_product * &taylor_series_argument;
             taylor_series = &taylor_series + &current_product.clone().into();
+            current_product = &current_product * &taylor_series_argument;
         }
 
-        let mut new_duals = self.duals.clone() / rhs.value; 
-        new_duals = &new_duals + &(&new_duals * &taylor_series);
-
-        Dual::<T>{value: self.value/rhs.value, 
-                  duals: new_duals}
+        let prefactor = self / rhs.value; 
+        
+        &prefactor + &(&prefactor * &Dual::<T>{value : T::zero(), duals : taylor_series})
     }
 }
 
