@@ -24,23 +24,25 @@ impl<T: Scalar, const D: usize> EPolynomial<T,D>{
 		EPolynomial::<T,D>(monomials)
 	}
 
+	pub (crate) fn analytic_partial_derivative(&self, i:usize) -> EPolynomial<T,D>{
+		EPolynomial::<T,D>(self.0.iter()
+							.map(|mono| mono.analytic_partial_derivative(i))
+							.collect()
+						)
+	}
 
-	pub (crate) fn analytic_gradient(&self, x:&EVector<T>) -> ndarray::Array1<T>{
-		let mut gradient = ndarray::Array1::from_elem([D], T::zero());
+
+	pub (crate) fn analytic_gradient(&self, x:&EVector<T>) -> EVector<T>{
+		let mut gradient = ndarray::Array1::from_elem([D], Dual::<T>::zero());
 		for i in 0..D{
-			gradient[i] = self.0.iter()
-							  .map(|mono| mono.analytic_partial_derivative(i))
-							  .map(|pder| pder.eval(x).values())
-							  .map(|pder_arr| pder_arr[ndarray::Dim(())])
-							  .reduce(|acc,item| acc + item)
-							  .unwrap();
+			gradient[i] = self.analytic_partial_derivative(i).eval(x).0[ndarray::Dim(())]
 		}		
-
-		return gradient;
+		
+		gradient.as_slice().unwrap().into()
 	}
 	
-	pub (crate) fn analytic_hessian(&self, x:&EVector<T>) -> ndarray::Array2<T>{
-		let mut hessian = ndarray::Array2::from_elem([D,D], T::zero());
+	pub (crate) fn analytic_hessian(&self, x:&EVector<T>) ->  EMatrix<T>{
+		let mut hessian = ndarray::Array2::from_elem([D,D], Dual::<T>::zero());
 		for i in 0..D{ for j in 0..D{
 			hessian[[i,j]] = self.0.iter()
 							  .map(|mono| {
@@ -48,13 +50,13 @@ impl<T: Scalar, const D: usize> EPolynomial<T,D>{
 									let pder_ij = pder_i.analytic_partial_derivative(j);
 									pder_ij
 							  })
-							  .map(|pder_ij| pder_ij.eval(x).values())
+							  .map(|pder_ij| pder_ij.eval(x))
 							  .map(|pder_arr| pder_arr[ndarray::Dim(())])
 							  .reduce(|acc,item| acc + item)
 							  .unwrap();
 		}}
 
-		return hessian;
+		EArray::<T, ndarray::Ix2>(hessian)
 	}
 
 
