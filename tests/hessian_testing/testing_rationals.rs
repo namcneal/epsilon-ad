@@ -30,8 +30,8 @@ fn test_on_D_dim_rationals<const D: usize>(){
 					// println!("Random input: {:?}\n", &input);
 					// println!("Rational function: {:?}\n\n", &rational);
 					
-					let analytic_result = rational.analytic_gradient(&input);
-					let epsilon_result  = rational.epsilon_gradient(&input.values());
+					let analytic_result = rational.analytic_hessian(&input);
+					let epsilon_result  = rational.epsilon_hessian(&input.values());
 
 					let difference = &analytic_result - &epsilon_result;
 					let mut distance = difference.map(|el| *el * *el).sum();

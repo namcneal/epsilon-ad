@@ -5,8 +5,8 @@ use rand_distr::Normal;
 
 #[derive(Debug, Clone)]
 pub (crate) struct EMonomial<T: Scalar, const D: usize>{
-	coefficient: T,
-	exponents  : [u32; D],
+	pub (crate) coefficient: T,
+	pub (crate) exponents  : [u32; D],
 }
 
 impl<T: Scalar, const D: usize> EMonomial<T,D>{
