@@ -108,6 +108,8 @@ impl<T: Scalar> Mul<T> for &Perturbation<T> {
     }
 }
 
+
+
 /*
             Division 
             --------

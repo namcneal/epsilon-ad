@@ -139,14 +139,36 @@ impl<T:Scalar> One for Dual<T>{
             --------
 */
 
+// impl<T: Scalar> Div for &Dual<T>{
+//     type Output = Dual<T>;
+
+//     fn div(self:Self, rhs: Self) -> Self::Output {
+//         // assert!(false, "TODO: Check to see if this should also be changed to reflect the change in multiplication.");
+
+//         Dual::<T>{value: self.value/rhs.value, 
+//                   duals: (&(&self.duals * rhs.value) - &(&rhs.duals * self.value)) / pow(rhs.value,2)}
+//     }
+// }
+
 impl<T: Scalar> Div for &Dual<T>{
     type Output = Dual<T>;
 
     fn div(self:Self, rhs: Self) -> Self::Output {
         // assert!(false, "TODO: Check to see if this should also be changed to reflect the change in multiplication.");
+        let taylor_series_argument = &rhs.duals / -rhs.value; 
+        
+        let mut current_product = taylor_series_argument.clone();
+        let mut taylor_series = taylor_series_argument.clone();
+        while (&current_product).products.len() > 0{
+            current_product = &current_product * &taylor_series_argument;
+            taylor_series = &taylor_series + &current_product.clone().into();
+        }
+
+        let mut new_duals = self.duals.clone() / rhs.value; 
+        new_duals = &new_duals + &(&new_duals * &taylor_series);
 
         Dual::<T>{value: self.value/rhs.value, 
-                  duals: (&(&self.duals * rhs.value) - &(&rhs.duals * self.value)) / pow(rhs.value,2)}
+                  duals: new_duals}
     }
 }
 

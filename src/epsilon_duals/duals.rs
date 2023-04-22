@@ -33,6 +33,13 @@ impl<T: Scalar> From<T> for Dual<T>{
         }
 }
 
+impl<T: Scalar> From<Perturbation<T>> for Dual<T>{
+    fn from(value: Perturbation<T>) -> Self {
+        Dual::<T> { value: T::zero(), 
+                    duals: value}
+        }
+}
+
 impl<T: Scalar> Dual<T>{
     pub fn zero() -> Self{
         Self::from(T::zero())
