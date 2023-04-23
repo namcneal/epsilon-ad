@@ -4,6 +4,7 @@ use crate::epsilon_duals::perturbations::*;
 use crate::scalar::Scalar;
 use std::iter::repeat;
 use std::ops::*;
+use std::thread::current;
 
 #[derive(Clone, PartialEq)]
 pub struct Dual<T: Scalar>{
@@ -49,16 +50,28 @@ impl<T: Scalar> Dual<T>{
         Self::from(T::one())
     }
 
-
+    // https://math.stackexchange.com/questions/3284393/what-is-the-taylor-series-of-a-square-root
     pub fn sqrt(&self) -> Self{
-        let mut derived_perturbations = self.duals.clone();
-        for c in derived_perturbations.coefficients.iter_mut(){
-            *c = T::from(0.5).unwrap() / c.sqrt();
+
+        let taylor_series_argument = self.duals.clone() /  self.value.powi(2);
+        let mut current_argument = taylor_series_argument.clone();
+        
+        let mut n : u32 = 0;
+        let mut catalan_n : u32 = 1;
+        let mut taylor_series = Dual::<T>::one();
+        while current_argument.products.len() > 0{
+            let coefficient = catalan_n * (2 as u32).pow(2*n + 1) as u32;
+
+            taylor_series = &taylor_series +  &(&current_argument * T::from(f64::powf(-1.0, n as f64) * coefficient as f64).unwrap()).into();
+
+            n = n + 1;
+            catalan_n = 2 * (2*n - 1) / (n + 1);
+            current_argument = &current_argument * &taylor_series_argument;
+            current_argument = current_argument.combine_like_monomials();
+
         }
 
-        Dual::<T>{value: self.value.sqrt(), 
-                  duals: derived_perturbations
-                  }
+        taylor_series * self.value
     }
 
     pub fn pow(&self, k:usize) -> Dual<T>{
