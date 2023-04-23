@@ -56,17 +56,23 @@ impl<T: Scalar> Perturbation<T>{
                            products    : PerturbationData::<NonEmptyEpsilonProduct>::new()}
     }
 
+	pub (crate) fn combine_like_monomials(self) -> Perturbation<T>{
+	 Self::combine_like_monomials_iter(self.coefficients.into_iter(), self.products.into_iter())
+	}
 
-    pub (crate) fn combine_like_monomials(coefficients:Vec<&T>, products:Vec<&NonEmptyEpsilonProduct>) -> Perturbation<T>{
-        let mut coefficients_grouped_by_like_products = HashMap::<NonEmptyEpsilonProduct, Vec<T>>::new();
-		for (i, epsilon_product) in products.iter().enumerate(){
+	pub (crate) fn combine_like_monomials_iter(
+			coefficients : impl Iterator<Item = T>, 
+			products     : impl Iterator<Item = NonEmptyEpsilonProduct>) -> Perturbation<T>
+	{
+		let mut coefficients_grouped_by_like_products = HashMap::<NonEmptyEpsilonProduct, Vec<T>>::new();
+		for (i, (coefficient, epsilon_product)) in coefficients.zip(products).enumerate(){
             
 			match coefficients_grouped_by_like_products.get_mut(&epsilon_product){
 				None => {
-					coefficients_grouped_by_like_products.insert(**epsilon_product, vec![*coefficients[i]]);
+					coefficients_grouped_by_like_products.insert(epsilon_product, vec![coefficient]);
 				},
 				Some(vector) => {
-					vector.push(*coefficients[i]);
+					vector.push(coefficient);
 				}
 			}
 		}

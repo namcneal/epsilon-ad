@@ -33,6 +33,7 @@ fn test_on_D_dim_rationals<const D: usize>(){
 					let analytic_result = rational.analytic_hessian(&input);
 					let epsilon_result  = rational.epsilon_hessian(&input.values());
 
+
 					let difference = &analytic_result - &epsilon_result;
 					let mut distance = difference.map(|el| *el * *el).sum();
 					distance /= f64::from(D as f64);

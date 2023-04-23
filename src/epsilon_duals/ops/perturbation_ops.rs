@@ -15,9 +15,9 @@ impl<T: Scalar> Add for &Perturbation<T>{
 
     // https://stackoverflow.com/questions/64226562/check-if-vec-contains-all-elements-from-another-vec
     fn add(self, rhs: Self) -> Self::Output {
-       Perturbation::combine_like_monomials(
-         self.coefficients.iter().chain(rhs.coefficients.iter()).collect(), 
-                self.products.iter().chain(rhs.products.iter()).collect()
+       Perturbation::combine_like_monomials_iter(
+            self.coefficients.clone().into_iter().chain(rhs.coefficients.clone().into_iter()), 
+            self.products.clone().into_iter().chain(rhs.products.clone().into_iter())
         )
     }
 }
@@ -70,7 +70,7 @@ impl<T: Scalar> Mul for &Perturbation<T> {
             }
         }
 
-        Perturbation::<T>{coefficients: coeffs, products:products}
+        Perturbation::<T>{coefficients: coeffs, products:products}.combine_like_monomials()
 
     }
 }
