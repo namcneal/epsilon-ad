@@ -8,7 +8,6 @@ pub mod differentiation;
 
 
 pub mod prelude {
-	pub use crate::scalar::Scalar;
 	pub use crate::epsilon_duals::duals::*;
 	pub use crate::epsilon_arrays::epsilon_arrays::*;
 	pub use crate::lifting::*;
