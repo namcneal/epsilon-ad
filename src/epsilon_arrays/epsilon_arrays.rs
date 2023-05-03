@@ -2,6 +2,8 @@ use std::ops::{Deref, DerefMut};
 use ndarray::{arr0, arr1,Array0, Array1, ArrayD, Array,ArrayView1,stack,Axis,Dim,Dimension, Ix1};
 
 use crate::prelude::*;
+use crate::Scalar;
+
 
 #[derive(Debug, Clone)]
 pub struct EArray<T: Scalar, D:Dimension>(pub Array<Dual<T>, D>);

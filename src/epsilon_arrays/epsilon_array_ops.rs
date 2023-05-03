@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use crate::Scalar;
 use std::ops::*;
 
 impl<T: Scalar, D:ndarray::Dimension> Add for &EArray<T,D>{

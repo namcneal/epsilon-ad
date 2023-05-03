@@ -1,4 +1,5 @@
 use epsilon_ad::prelude::*;
+use epsilon_ad::Scalar;
 use crate::epsilon_polynomials::monomials::*;
 
 #[derive(Debug, Clone)]

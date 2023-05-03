@@ -2,6 +2,7 @@ use array_init::array_init;
 use ndarray::Dimension;
 
 use crate::prelude::*;
+use crate::Scalar;
 use crate::epsilon_duals::epsilons::*;
 use crate::epsilon_duals::perturbations::Perturbation;
 

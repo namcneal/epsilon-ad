@@ -1,4 +1,5 @@
 use epsilon_ad::prelude::*;
+use epsilon_ad::Scalar;
 
 use rand::prelude::*;
 use rand_distr::Normal;
